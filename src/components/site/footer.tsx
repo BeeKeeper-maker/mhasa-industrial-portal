@@ -10,6 +10,7 @@ import { useAppStore, type ViewKey } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
 import { useSiteData } from "@/lib/hooks/use-queries";
 import { useServices } from "@/lib/hooks/use-queries";
+import { NewsletterWidget } from "@/components/site/newsletter-widget";
 import type { Locale } from "@/lib/types";
 
 export function Footer() {
@@ -73,7 +74,7 @@ export function Footer() {
 
       {/* Main footer */}
       <div className="container mx-auto px-6 py-14">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
           {/* Company */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-4">
@@ -193,6 +194,11 @@ export function Footer() {
                 {t.actions.downloadProfile}
               </a>
             )}
+          </div>
+
+          {/* Newsletter */}
+          <div>
+            <NewsletterWidget />
           </div>
         </div>
       </div>

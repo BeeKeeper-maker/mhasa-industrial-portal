@@ -575,6 +575,14 @@ function TestimonialsSection() {
   const { data: siteData } = useSiteData();
   const testimonials = siteData?.testimonials ?? [];
   const { t, locale } = useLocale();
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused || testimonials.length <= 1) return;
+    const timer = setInterval(() => setIndex((i) => (i + 1) % testimonials.length), 5000);
+    return () => clearInterval(timer);
+  }, [paused, testimonials.length]);
 
   if (testimonials.length === 0) return null;
 
@@ -588,11 +596,51 @@ function TestimonialsSection() {
             ? "تقييمات حقيقية من أكبر مشغلي القطاع الصناعي في المملكة."
             : "Real feedback from the Kingdom's leading industrial operators."}
         />
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {testimonials.map((tm, i) => (
-            <TestimonialCard key={tm.id} testimonial={tm} index={i} />
-          ))}
-        </div>
+
+        {testimonials.length === 1 ? (
+          <div className="mt-12 max-w-2xl mx-auto">
+            <TestimonialCard testimonial={testimonials[0]} index={0} />
+          </div>
+        ) : (
+          <div
+            className="mt-12 max-w-4xl mx-auto"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+          >
+            {/* Carousel viewport */}
+            <div className="relative overflow-hidden">
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              >
+                <TestimonialCard testimonial={testimonials[index]} index={0} />
+              </motion.div>
+            </div>
+
+            {/* Controls */}
+            <div className="mt-6 flex items-center justify-center gap-3">
+              {testimonials.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setIndex(i)}
+                  aria-label={`Testimonial ${i + 1}`}
+                  className={cn(
+                    "h-2 rounded-full transition-all duration-300",
+                    i === index ? "w-8 bg-gold" : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/60"
+                  )}
+                />
+              ))}
+            </div>
+
+            {/* Counter */}
+            <div className="mt-3 text-center text-xs text-muted-foreground">
+              {index + 1} / {testimonials.length}
+              {paused && <span className="ms-2 opacity-60">· {locale === "ar" ? "متوقف" : "paused"}</span>}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

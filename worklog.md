@@ -354,3 +354,87 @@ Stage Summary:
 - All 12 public views, full admin CMS, bilingual EN/AR (RTL), SEO (sitemap, robots, JSON-LD, manifest), premium Navy/Gold design.
 - Lint: 0 errors, 0 warnings. All routes verified returning HTTP 200 with correct data.
 - Recurring webDevReview cron job active for continuous improvement.
+
+---
+Task ID: 6 (Cron Review Round 1 — New Features & Enhancements)
+Agent: webDevReview cron (autonomous)
+Task: QA assessment + add dark mode, newsletter, quick-quote widget, enhanced project filters, testimonial carousel, 404 page
+
+## Current Project Status Assessment
+- **Stable**: All 12 views, full admin CMS, bilingual EN/AR, SEO complete.
+- **Lint**: clean (0 errors, 0 warnings).
+- **Server**: All routes return HTTP 200, zero runtime errors in dev.log.
+- **Agent-browser limitation**: Headless Chrome cannot reach localhost in this sandbox (network namespace isolation). QA performed via curl + dev.log analysis. Preview panel actively rendering the site.
+
+## Current Goals / Completed Modifications
+
+### New Features Added
+1. **Dark Mode Toggle** (`src/components/site/theme-toggle.tsx`)
+   - Added `ThemeToggle` component using next-themes (already configured in Providers).
+   - Animated sun/moon icon swap via Framer Motion AnimatePresence.
+   - Added to both desktop header actions and mobile drawer.
+   - Created `useMountEffect` hook to satisfy react-hooks/set-state-in-effect lint rule.
+   - Persisted via next-themes localStorage.
+
+2. **Newsletter Subscription** (full stack)
+   - Prisma model `NewsletterSubscriber` (email unique, name, locale, source, isActive, unsubscribedAt, ipAddress, createdAt) — pushed to DB.
+   - Public API `POST /api/newsletter/subscribe` — rate-limited (3/hr), Zod-validated, upsert with reactivation logic.
+   - Admin API `GET /api/admin/newsletter` — list subscribers + stats (active/total counts), status filter.
+   - `NewsletterWidget` component in footer (5-column grid now) — email + optional name, success state with checkmark, toast feedback.
+   - `AdminNewsletter` panel in admin dashboard — stat cards, subscriber list, CSV export, status filter.
+   - Newsletter count added to admin overview dashboard.
+
+3. **Quick-Quote Floating Widget** (`src/components/site/quick-quote-widget.tsx`)
+   - Slide-out panel accessible from any view via a vertical "Quick Quote" tab on the right edge.
+   - Compact form: name, company, email, phone, budget dropdown, message + honeypot.
+   - Submits to existing `/api/contact` endpoint with "Quick Quote Request" subject.
+   - Success state with checkmark animation, toast feedback.
+   - Backdrop blur, spring animation, RTL-aware (slides from left in RTL).
+   - Added `quoteOpen` state to Zustand store.
+   - Integrated into `page.tsx`.
+
+4. **Enhanced Projects View** (search + sort + result count)
+   - Added search input (filters by title, client, category, location, description).
+   - Added sort dropdown: Newest, Oldest, Value High/Low, Alphabetical.
+   - Result count display with active filter context.
+   - Clear-filters button in empty state.
+   - Search clear (X) button inside input.
+
+5. **Auto-rotating Testimonial Carousel** (home view)
+   - Replaced static 3-column grid with single-card carousel.
+   - Auto-rotates every 5 seconds, pauses on hover.
+   - Dot navigation (active dot expands to gold pill).
+   - Counter display (1/3) with "paused" indicator.
+   - Framer Motion slide transition between testimonials.
+
+6. **404 Error Page** (`src/app/not-found.tsx`)
+   - Branded Navy/Gold design matching site theme.
+   - Large "404" in gold, alert icon, descriptive message.
+   - "Back to Home" + "Contact Us" buttons.
+   - Decorative blurred gold circles.
+   - Server-renderable (CSS-only, no Framer Motion to avoid SSR issues).
+
+### Verification Results
+- `bun run lint` → **0 errors, 0 warnings** ✓
+- Home page: HTTP 200 ✓
+- 404 page: HTTP 404 (branded page renders) ✓
+- Newsletter subscribe (new): `{"success":true,"data":{"subscribed":true}}` ✓
+- Newsletter subscribe (duplicate): `{"success":true,"data":{"alreadySubscribed":true}}` ✓
+- Admin newsletter API: correctly returns 401 without auth ✓
+- Zero runtime errors in dev.log ✓
+
+## Unresolved Issues / Risks / Next-Phase Recommendations
+- **Agent-browser QA**: Still cannot reach localhost. Recommend future rounds use dev.log parsing + curl API testing as primary QA method.
+- **Server memory**: ~30% of 4GB during Turbopack compilation. Consider production build if memory pressure causes issues.
+- **Next-phase feature ideas** (priority order):
+  1. Blog post social sharing buttons (LinkedIn, X, WhatsApp, copy link) — partially exists, can enhance
+  2. Project comparison feature (select 2-3 projects, compare side-by-side)
+  3. Service comparison table (features matrix across all services)
+  4. Cookie preferences modal (granular control: necessary/analytics/marketing)
+  5. Print stylesheet for legal pages (Privacy/Terms)
+  6. Reading progress bar on blog post detail
+  7. "Back to top" inside long legal documents
+  8. Animated page transitions between views (currently just fade)
+  9. Image lazy-loading with blur-up placeholder
+  10. Google Analytics 4 + Meta Pixel integration (placeholders exist in settings)
+- **Styling enhancements** for next round: more micro-interactions, hover states on cards, scroll-triggered animations, parallax hero.

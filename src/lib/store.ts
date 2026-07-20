@@ -26,6 +26,7 @@ interface AppState {
   locale: Locale;
   adminOpen: boolean;
   searchOpen: boolean;
+  quoteOpen: boolean;
   selectedProjectSlug: string | null;
   selectedServiceSlug: string | null;
   selectedPostSlug: string | null;
@@ -35,6 +36,7 @@ interface AppState {
   toggleLocale: () => void;
   setAdminOpen: (open: boolean) => void;
   setSearchOpen: (open: boolean) => void;
+  setQuoteOpen: (open: boolean) => void;
   openProject: (slug: string) => void;
   openService: (slug: string) => void;
   openPost: (slug: string) => void;
@@ -49,6 +51,7 @@ export const useAppStore = create<AppState>()(
       locale: "en",
       adminOpen: false,
       searchOpen: false,
+      quoteOpen: false,
       selectedProjectSlug: null,
       selectedServiceSlug: null,
       selectedPostSlug: null,
@@ -70,6 +73,7 @@ export const useAppStore = create<AppState>()(
         set((s) => ({ locale: s.locale === "en" ? "ar" : "en" })),
       setAdminOpen: (adminOpen) => set({ adminOpen }),
       setSearchOpen: (searchOpen) => set({ searchOpen }),
+      setQuoteOpen: (quoteOpen) => set({ quoteOpen }),
       openProject: (slug) => {
         set({ view: "projects", selectedProjectSlug: slug });
         if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });

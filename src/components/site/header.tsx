@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from "@/com
 import { useAppStore, type ViewKey } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
 import { useSiteData } from "@/lib/hooks/use-queries";
+import { ThemeToggle } from "@/components/site/theme-toggle";
 import { cn } from "@/lib/utils";
 
 export function Header() {
@@ -131,7 +132,7 @@ export function Header() {
             </nav>
 
             {/* Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
@@ -141,6 +142,8 @@ export function Header() {
               >
                 <Search className="h-5 w-5" />
               </Button>
+
+              <ThemeToggle className="hidden md:inline-flex" />
 
               <Button
                 variant="ghost"
@@ -226,6 +229,9 @@ export function Header() {
                           <Shield className="h-4 w-4" />
                           Admin
                         </Button>
+                      </div>
+                      <div className="flex justify-center pt-1">
+                        <ThemeToggle />
                       </div>
                     </div>
                   </div>

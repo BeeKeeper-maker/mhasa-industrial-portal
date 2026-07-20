@@ -10,11 +10,15 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import {
   ArrowRight, ChevronLeft, MapPin, Building2, Calendar, Wallet,
-  Tag, CheckCircle2, Sparkles, Maximize2, X,
+  Tag, CheckCircle2, Sparkles, Maximize2, X, Search, ArrowUpDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog, DialogContent, DialogTitle,
 } from "@/components/ui/dialog";
@@ -42,11 +46,48 @@ export function ProjectsView() {
 function ProjectsList() {
   const { t, locale } = useLocale();
   const [category, setCategory] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<string>("newest");
 
   // Fetch all projects to derive categories
   const { data: allProjects, isLoading: allLoading } = useProjects();
   const { data: filtered } = useProjects({ category });
-  const projects = category === "all" ? (allProjects ?? []) : (filtered ?? []);
+
+  const baseProjects = category === "all" ? (allProjects ?? []) : (filtered ?? []);
+
+  // Client-side search + sort
+  const projects = useMemo(() => {
+    let result = baseProjects;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter((p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.clientName.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        (p.location ?? "").toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q)
+      );
+    }
+    const sorted = [...result];
+    switch (sort) {
+      case "newest":
+        sorted.sort((a, b) => new Date(b.completionDate ?? 0).getTime() - new Date(a.completionDate ?? 0).getTime());
+        break;
+      case "oldest":
+        sorted.sort((a, b) => new Date(a.completionDate ?? 0).getTime() - new Date(b.completionDate ?? 0).getTime());
+        break;
+      case "value-high":
+        sorted.sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+        break;
+      case "value-low":
+        sorted.sort((a, b) => (a.value ?? 0) - (b.value ?? 0));
+        break;
+      case "alpha":
+        sorted.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+    }
+    return sorted;
+  }, [baseProjects, search, sort]);
 
   const categories = useMemo(() => {
     if (!allProjects) return [];
@@ -69,8 +110,44 @@ function ProjectsList() {
 
       <section className="section-pad bg-background">
         <div className="container mx-auto px-6">
+          {/* Search + Sort bar */}
+          <FadeIn className="mb-6">
+            <div className="flex flex-col md:flex-row gap-3 max-w-3xl mx-auto">
+              <div className="relative flex-1">
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={locale === "ar" ? "ابحث عن مشاريع، عملاء، مواقع..." : "Search projects, clients, locations..."}
+                  className="ps-9 h-11"
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <Select value={sort} onValueChange={setSort}>
+                <SelectTrigger className="w-full md:w-[200px] h-11">
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">{locale === "ar" ? "الأحدث أولاً" : "Newest first"}</SelectItem>
+                  <SelectItem value="oldest">{locale === "ar" ? "الأقدم أولاً" : "Oldest first"}</SelectItem>
+                  <SelectItem value="value-high">{locale === "ar" ? "القيمة: الأعلى" : "Value: High to Low"}</SelectItem>
+                  <SelectItem value="value-low">{locale === "ar" ? "القيمة: الأقل" : "Value: Low to High"}</SelectItem>
+                  <SelectItem value="alpha">{locale === "ar" ? "أبجدي" : "Alphabetical"}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </FadeIn>
+
           {/* Category filter bar */}
-          <FadeIn className="mb-10">
+          <FadeIn className="mb-8">
             <div className="flex flex-wrap items-center justify-center gap-2">
               <FilterChip
                 active={category === "all"}
@@ -90,6 +167,15 @@ function ProjectsList() {
             </div>
           </FadeIn>
 
+          {/* Result count */}
+          {!allLoading && (
+            <div className="mb-6 text-center text-sm text-muted-foreground">
+              {projects.length} {locale === "ar" ? "مشروع" : (projects.length === 1 ? "project" : "projects")}
+              {search && <span className="ms-1">{locale === "ar" ? `مطابقة لـ "${search}"` : `matching "${search}"`}</span>}
+              {category !== "all" && <span className="ms-1">{locale === "ar" ? `في ${category}` : `in ${category}`}</span>}
+            </div>
+          )}
+
           {/* Grid */}
           {allLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -99,7 +185,18 @@ function ProjectsList() {
             </div>
           ) : projects.length === 0 ? (
             <div className="text-center py-20">
+              <Search className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
               <p className="text-muted-foreground">{t.common.noResults}</p>
+              {(search || category !== "all") && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => { setSearch(""); setCategory("all"); }}
+                >
+                  {locale === "ar" ? "مسح الفلاتر" : "Clear filters"}
+                </Button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

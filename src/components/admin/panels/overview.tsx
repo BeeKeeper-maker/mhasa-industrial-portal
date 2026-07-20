@@ -5,7 +5,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Phone, Users, Building2, FileText, TrendingUp, ArrowUpRight } from "lucide-react";
+import { Phone, Users, Building2, FileText, TrendingUp, ArrowUpRight, Mail } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -20,15 +20,17 @@ export function AdminOverview() {
   const { data: applications } = useQuery({ queryKey: ["admin-applications"], queryFn: () => fetchAdmin("/api/admin/applications") });
   const { data: services } = useQuery({ queryKey: ["admin-services"], queryFn: () => fetchAdmin("/api/admin/services") });
   const { data: projects } = useQuery({ queryKey: ["admin-projects"], queryFn: () => fetchAdmin("/api/admin/projects") });
+  const { data: newsletter } = useQuery({ queryKey: ["admin-newsletter"], queryFn: () => fetchAdmin("/api/admin/newsletter") });
   const { data: activity } = useQuery({ queryKey: ["admin-activity"], queryFn: () => fetchAdmin("/api/admin/activity") });
 
   const newLeads = (leads ?? []).filter((l: { status: string }) => l.status === "NEW").length;
   const newApps = (applications ?? []).filter((a: { status: string }) => a.status === "NEW").length;
+  const activeSubs = (newsletter as { stats?: { active?: number } } | null)?.stats?.active ?? 0;
 
   const stats = [
     { label: "New Leads", value: newLeads, total: leads?.length ?? 0, icon: Phone, color: "text-blue-600 bg-blue-50" },
     { label: "New Applications", value: newApps, total: applications?.length ?? 0, icon: Users, color: "text-green-600 bg-green-50" },
-    { label: "Services", value: services?.length ?? 0, icon: Building2, color: "text-purple-600 bg-purple-50" },
+    { label: "Newsletter Subs", value: activeSubs, total: 0, icon: Mail, color: "text-amber-600 bg-amber-50" },
     { label: "Projects", value: projects?.length ?? 0, icon: FileText, color: "text-orange-600 bg-orange-50" },
   ];
 

@@ -7,18 +7,20 @@
 import { useState } from "react";
 import {
   LayoutDashboard, Briefcase, Building2, FileText, Users, Image as ImageIcon,
-  Star, Award, Phone, Settings, ScrollText, BarChart3,
+  Star, Award, Phone, Settings, ScrollText, BarChart3, Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AdminOverview } from "@/components/admin/panels/overview";
 import { AdminLeads } from "@/components/admin/panels/leads";
 import { AdminApplications } from "@/components/admin/panels/applications";
+import { AdminNewsletter } from "@/components/admin/panels/newsletter";
 import { ResourceManager } from "@/components/admin/resource-manager";
 
 type Tab =
   | "overview"
   | "leads"
   | "applications"
+  | "newsletter"
   | "services"
   | "projects"
   | "blog"
@@ -37,6 +39,7 @@ const tabs: { key: Tab; label: string; icon: React.ElementType; group?: string }
   { key: "overview", label: "Overview", icon: LayoutDashboard },
   { key: "leads", label: "Contact Leads", icon: Phone },
   { key: "applications", label: "Job Applications", icon: Users },
+  { key: "newsletter", label: "Newsletter", icon: Mail },
   { key: "services", label: "Services", icon: Briefcase, group: "Content" },
   { key: "projects", label: "Projects", icon: Building2 },
   { key: "blog", label: "Blog / News", icon: FileText },
@@ -105,6 +108,7 @@ export function AdminDashboard() {
           {tab === "overview" && <AdminOverview />}
           {tab === "leads" && <AdminLeads />}
           {tab === "applications" && <AdminApplications />}
+          {tab === "newsletter" && <AdminNewsletter />}
           {tab === "services" && <ResourceManager resource="services" title="Services" />}
           {tab === "projects" && <ResourceManager resource="projects" title="Projects" />}
           {tab === "blog" && <ResourceManager resource="blog" title="Blog / News" />}
