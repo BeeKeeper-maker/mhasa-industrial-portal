@@ -645,3 +645,68 @@ Task: Add admin date-range filter for charts, blog post table of contents, skele
   9. Content versioning / draft preview for blog posts
   10. Sitemap priority/frequency per view type
 - **Styling enhancements**: Card hover lift effects, gradient borders on featured items, skeleton→content fade transition.
+
+---
+Task ID: 10 (Cron Review Round 6 — Card Effects, Skeleton Fade, Bulk Actions)
+Agent: webDevReview cron (autonomous)
+Task: Add premium card hover effects, skeleton-to-content fade, admin bulk delete for leads
+
+## Current Project Status Assessment
+- **Stable**: All previous 25+ features working.
+- **Lint**: clean (0 errors, 0 warnings).
+- **Server**: Home HTTP 200, Site API 7 svc/3 hero, admin leads requires auth.
+- **Zero runtime errors** in dev.log.
+
+## Current Goals / Completed Modifications
+
+### Features Completed This Round
+
+1. **Premium Card Hover Effects** (global CSS utilities)
+   - Added 7 new CSS utility classes to `globals.css`:
+     - `.card-lift` — smooth 3D elevation on hover (translateY -6px + layered shadow)
+     - `.gradient-border` — animated gold gradient border sweep via mask-composite technique
+     - `.glow-gold` — pulsing gold glow for CTA buttons (2.5s ease-in-out infinite)
+     - `.fade-in-content` — skeleton→content fade-up transition (0.4s ease-out)
+     - `.shimmer-text` — animated gradient text for loading states
+     - `.image-zoom` — 1.08x scale on image hover (0.6s cubic-bezier)
+     - `.link-underline` — gold underline grow on hover
+   - Applied `card-lift` + `gradient-border` to ServiceCard
+   - Applied `card-lift` + `image-zoom` to ProjectCard and BlogCard
+   - All use premium easing curve `cubic-bezier(0.22, 1, 0.36, 1)`
+
+2. **Skeleton→Content Fade Transition**
+   - Applied `.fade-in-content` class to all grid containers in Projects, Services, and News views.
+   - Smooth 0.4s fade-up animation when content replaces skeleton loaders.
+   - Eliminates jarring pop-in effect.
+
+3. **Admin Bulk Actions** (leads panel)
+   - Added "Select" button toggle in leads header — enters bulk selection mode.
+   - Per-lead checkbox with gold ring highlight when selected.
+   - Select All / Deselect All toggle in bulk action bar.
+   - Bulk delete with confirmation dialog — deletes all selected leads in parallel.
+   - "Exit Bulk" / "Cancel" buttons to leave selection mode.
+   - Selected count display, gold accent border on action bar.
+   - Uses Promise.all for parallel deletion, toast feedback on success/failure.
+
+### Verification Results
+- `bun run lint` → **0 errors, 0 warnings** ✓
+- Home page: HTTP 200 ✓
+- Site API: 7 services, 3 heroes ✓
+- Admin leads API: correctly returns 401 without auth ✓
+- Zero runtime errors in dev.log ✓
+
+## Unresolved Issues / Risks / Next-Phase Recommendations
+- **Agent-browser QA**: Cannot reach localhost (sandbox isolation). QA via curl + dev.log.
+- **Bulk actions**: Currently leads-only; can extend to applications panel next.
+- **Next-phase feature ideas** (priority order):
+  1. Google Analytics 4 + Meta Pixel conditional loading based on cookie preferences
+  2. Image blur-up placeholder (global Next/Image enhancement with dominant color)
+  3. Project comparison feature (select 2-3, compare side-by-side)
+  4. "Last updated" badge on all admin-edited content
+  5. Export leads/applications by date range (CSV with date filter)
+  6. Email notification on new lead (SMTP integration — placeholder in settings)
+  7. PWA offline support with service worker
+  8. Content versioning / draft preview for blog posts
+  9. Bulk status change (not just delete) for leads
+  10. Admin search across all content types
+- **Styling enhancements**: Gradient borders on featured project cards, animated stat counters on scroll into view.

@@ -6,10 +6,11 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Phone, Mail, Building2, Trash2, Download, Loader2, Inbox } from "lucide-react";
+import { Phone, Mail, Building2, Trash2, Download, Loader2, Inbox, CheckSquare, Square, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -26,6 +27,8 @@ const statusColors: Record<string, string> = {
 
 export function AdminLeads() {
   const [filter, setFilter] = useState<string>("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkMode, setBulkMode] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: leads = [], isLoading } = useQuery({
@@ -69,6 +72,43 @@ export function AdminLeads() {
     },
   });
 
+  const bulkDelete = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const results = await Promise.all(
+        ids.map((id) =>
+          fetch(`/api/admin/leads/${id}`, { method: "DELETE" }).then((r) => r.json())
+        )
+      );
+      const failed = results.filter((r: { success?: boolean }) => !r.success);
+      if (failed.length) throw new Error(`${failed.length} deletions failed`);
+      return results;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
+      toast.success(`${selected.size} leads deleted`);
+      setSelected(new Set());
+      setBulkMode(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.size === leads.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(leads.map((l: { id: string }) => l.id)));
+    }
+  };
+
   const exportCsv = () => {
     if (!leads.length) return;
     const headers = ["Name", "Company", "Email", "Phone", "Subject", "Budget", "Status", "Date"];
@@ -104,8 +144,62 @@ export function AdminLeads() {
             <Download className="h-4 w-4" />
             Export CSV
           </Button>
+          <Button
+            variant={bulkMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => { setBulkMode(!bulkMode); setSelected(new Set()); }}
+            disabled={!leads.length}
+          >
+            <CheckSquare className="h-4 w-4" />
+            {bulkMode ? "Exit Bulk" : "Select"}
+          </Button>
         </div>
       </div>
+
+      {/* Bulk action bar */}
+      {bulkMode && leads.length > 0 && (
+        <div className="flex items-center justify-between rounded-lg border border-gold/30 bg-gold/5 p-3">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleSelectAll}
+              className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
+            >
+              {selected.size === leads.length ? (
+                <CheckSquare className="h-4 w-4 text-gold" />
+              ) : (
+                <Square className="h-4 w-4 text-muted-foreground" />
+              )}
+              {selected.size === leads.length ? "Deselect All" : "Select All"}
+            </button>
+            <span className="text-sm text-muted-foreground">
+              {selected.size} selected
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={selected.size === 0 || bulkDelete.isPending}
+              onClick={() => {
+                if (confirm(`Delete ${selected.size} selected leads? This cannot be undone.`)) {
+                  bulkDelete.mutate(Array.from(selected));
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete Selected
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { setBulkMode(false); setSelected(new Set()); }}
+            >
+              <X className="h-4 w-4" />
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
@@ -117,8 +211,23 @@ export function AdminLeads() {
       ) : (
         <div className="space-y-3">
           {leads.map((lead: Record<string, unknown> & { id: string }) => (
-            <Card key={lead.id} className="p-4 hover:shadow-md transition-shadow">
+            <Card
+              key={lead.id}
+              className={`p-4 hover:shadow-md transition-all ${
+                bulkMode && selected.has(lead.id) ? "ring-2 ring-gold border-gold/40" : ""
+              }`}
+            >
               <div className="flex flex-col md:flex-row md:items-start gap-4">
+                {/* Checkbox (bulk mode) */}
+                {bulkMode && (
+                  <div className="flex items-start pt-1">
+                    <Checkbox
+                      checked={selected.has(lead.id)}
+                      onCheckedChange={() => toggleSelect(lead.id)}
+                      className="border-gold/40 data-[state=checked]:bg-gold data-[state=checked]:border-gold"
+                    />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <h3 className="font-semibold text-foreground">{lead.name as string}</h3>

@@ -29,7 +29,7 @@ export function ServiceCard({ service, index = 0 }: { service: ServiceDTO; index
       transition={{ duration: 0.5, delay: index * 0.08 }}
     >
       <Card
-        className="group relative h-full overflow-hidden cursor-pointer border-border/60 bg-card transition-all duration-300 hover:border-gold/50 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1"
+        className="group card-lift gradient-border relative h-full overflow-hidden cursor-pointer border-border/60 bg-card"
         onClick={() => openService(service.slug)}
       >
         {/* Top accent bar */}
@@ -75,7 +75,7 @@ export function ProjectCard({ project, index = 0 }: { project: ProjectDTO; index
       transition={{ duration: 0.5, delay: index * 0.08 }}
     >
       <Card
-        className="group relative h-full overflow-hidden cursor-pointer border-0 bg-muted/30 p-0 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20"
+        className="group card-lift image-zoom relative h-full overflow-hidden cursor-pointer border-0 bg-muted/30 p-0"
         onClick={() => openProject(project.slug)}
       >
         {/* Image */}
@@ -195,7 +195,7 @@ export function BlogCard({ post, index = 0 }: { post: BlogPostDTO; index?: numbe
       transition={{ duration: 0.5, delay: index * 0.08 }}
     >
       <Card
-        className="group h-full overflow-hidden cursor-pointer border-border/60 bg-card transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+        className="group card-lift image-zoom h-full overflow-hidden cursor-pointer border-border/60 bg-card"
         onClick={() => openPost(post.slug)}
       >
         <div className="relative aspect-[16/9] overflow-hidden bg-muted">
