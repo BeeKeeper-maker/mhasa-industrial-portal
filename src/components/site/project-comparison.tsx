@@ -19,11 +19,21 @@ import { cn } from "@/lib/utils";
 
 const MAX_COMPARE = 3;
 
-export function ProjectComparison() {
+interface ProjectComparisonProps {
+  /** Controlled: array of selected project IDs. */
+  selectedIds: string[];
+  /** Called when a project is toggled (added/removed). */
+  onToggle: (id: string) => void;
+  /** Called when a project is removed from the comparison. */
+  onRemove: (id: string) => void;
+  /** Called when the user clears all selections. */
+  onClear: () => void;
+}
+
+export function ProjectComparison({ selectedIds, onToggle, onRemove, onClear }: ProjectComparisonProps) {
   const { data: allProjects } = useProjects();
   const { locale, pick } = useLocale();
   const openProject = useAppStore((s) => s.openProject);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -32,20 +42,12 @@ export function ProjectComparison() {
     [allProjects, selectedIds]
   );
 
-  const toggleSelect = (id: string) => {
-    setSelectedIds((prev) => {
-      if (prev.includes(id)) return prev.filter((x) => x !== id);
-      if (prev.length >= MAX_COMPARE) return prev;
-      return [...prev, id];
-    });
-  };
-
   const removeSelected = (id: string) => {
-    setSelectedIds((prev) => prev.filter((x) => x !== id));
+    onRemove(id);
   };
 
   const clearAll = () => {
-    setSelectedIds([]);
+    onClear();
     setModalOpen(false);
   };
 
@@ -165,7 +167,7 @@ export function ProjectComparison() {
                     <button
                       key={p.id}
                       onClick={() => {
-                        toggleSelect(p.id);
+                        onToggle(p.id);
                         setPickerOpen(false);
                       }}
                       disabled={selectedIds.length >= MAX_COMPARE}

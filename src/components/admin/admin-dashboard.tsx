@@ -7,13 +7,14 @@
 import { useState } from "react";
 import {
   LayoutDashboard, Briefcase, Building2, FileText, Users, Image as ImageIcon,
-  Star, Award, Phone, Settings, ScrollText, BarChart3, Mail,
+  Star, Award, Phone, Settings, ScrollText, BarChart3, Mail, Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AdminOverview } from "@/components/admin/panels/overview";
 import { AdminLeads } from "@/components/admin/panels/leads";
 import { AdminApplications } from "@/components/admin/panels/applications";
 import { AdminNewsletter } from "@/components/admin/panels/newsletter";
+import { AdminSearch } from "@/components/admin/admin-search";
 import { ResourceManager } from "@/components/admin/resource-manager";
 
 type Tab =
@@ -57,12 +58,23 @@ const tabs: { key: Tab; label: string; icon: React.ElementType; group?: string }
 
 export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("overview");
+  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
     <div className="flex h-full">
+      <AdminSearch open={searchOpen} onOpenChange={setSearchOpen} />
       {/* Sidebar */}
       <aside className="hidden md:flex w-60 flex-col border-r border-border bg-card overflow-y-auto">
         <div className="p-3">
+          {/* Search button */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="flex w-full items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground hover:bg-muted transition-colors mb-3"
+          >
+            <Search className="h-4 w-4" />
+            <span>Search all…</span>
+            <kbd className="ms-auto rounded border border-border bg-background px-1 font-mono text-[10px]">⌘K</kbd>
+          </button>
           {tabs.map((t) => (
             <button
               key={t.key}

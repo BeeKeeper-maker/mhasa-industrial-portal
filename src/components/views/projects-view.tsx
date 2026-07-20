@@ -27,6 +27,7 @@ import {
 } from "@/components/site/primitives";
 import { ProjectCard } from "@/components/site/cards";
 import { BeforeAfterSlider } from "@/components/site/before-after-slider";
+import { ProjectComparison } from "@/components/site/project-comparison";
 import { ProjectGridSkeleton } from "@/components/site/skeletons";
 import { LastUpdatedBadge } from "@/components/site/last-updated-badge";
 import { ReadingProgress } from "@/components/site/reading-progress";
@@ -243,6 +244,16 @@ function ProjectsList() {
       </section>
 
       <CTASection />
+
+      {/* Comparison floating bar + modal (only active when compareMode is on) */}
+      {compareMode && (
+        <ProjectComparison
+          selectedIds={compareIds}
+          onToggle={toggleCompare}
+          onRemove={toggleCompare}
+          onClear={() => setCompareIds([])}
+        />
+      )}
     </div>
   );
 }

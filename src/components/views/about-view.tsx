@@ -194,6 +194,7 @@ function CompanyHistory() {
               eyebrow={locale === "ar" ? "تاريخنا" : "Our Journey"}
               title={locale === "ar" ? "من البداية حتى الريادة" : "From Founding to Leadership"}
               align="left"
+              gradient
             />
             <FadeIn delay={0.15} className="mt-4 text-muted-foreground leading-relaxed">
               {locale === "ar"

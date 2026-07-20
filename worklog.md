@@ -893,3 +893,66 @@ Task: Apply animated gradient to section headings, reading progress on project d
   9. Before/after slider enhancement with slider position tooltip
   10. Animated stat counters with scroll-trigger
 - **Styling enhancements**: Gradient borders on featured project cards, hero parallax depth layers, card hover glow.
+
+---
+Task ID: 14 (Cron Review Round 10 — Wire Comparison, Gradient Headings, Admin Search)
+Agent: webDevReview cron (autonomous)
+Task: Fix ProjectComparison wiring, apply gradient to more headings, add admin global search
+
+## Current Project Status Assessment
+- **Stable**: All previous 37+ features working.
+- **Lint**: clean (0 errors, 0 warnings).
+- **Server**: Home HTTP 200, Site API 7 svc/3 hero, admin requires auth.
+- **Zero runtime errors** in dev.log.
+- **Bug fixed**: ProjectComparison component was built but not rendered — now wired into ProjectsList.
+
+## Current Goals / Completed Modifications
+
+### Features Completed This Round
+
+1. **FIX: ProjectComparison Wiring** (critical bug fix)
+   - Refactored `ProjectComparison` component from self-contained state to controlled props (`selectedIds`, `onToggle`, `onRemove`, `onClear`).
+   - Rendered `<ProjectComparison>` in `ProjectsList` — only active when `compareMode` is on.
+   - Floating compare bar now appears at bottom when projects are selected.
+   - Comparison modal opens with side-by-side table when 2+ projects selected.
+   - Project picker modal allows adding more projects.
+   - Full integration: card selection → floating bar → comparison modal → open detail.
+
+2. **Gradient Section Headings** (extended)
+   - Applied `gradient` prop to About view: "From Founding to Leadership" heading.
+   - Animated navy→gold→navy sweep on key section titles.
+   - Now applied across: Home (services, featured projects), About (journey timeline).
+
+3. **Admin Global Search** (⌘K command palette)
+   - Created `AdminSearch` component — searches across ALL 9 content types in parallel.
+   - Fetches from services, projects, blog, team, testimonials, clients, jobs, gallery, FAQs endpoints.
+   - Debounced 300ms search, client-side filtering, grouped results by type.
+   - Type-colored icons (purple services, orange projects, blue blog, etc.).
+   - Status badges for blog posts and jobs.
+   - Result count per type + total.
+   - ⌘K / Ctrl+K keyboard shortcut to open.
+   - Search button in admin sidebar with kbd hint.
+   - Empty state with shortcut tip, loading spinner, no-results state.
+
+### Verification Results
+- `bun run lint` → **0 errors, 0 warnings** ✓
+- Home page: HTTP 200 ✓
+- Site API: 7 services, 3 heroes ✓
+- Admin API: correctly returns 401 without auth ✓
+- Zero runtime errors in dev.log ✓
+
+## Unresolved Issues / Risks / Next-Phase Recommendations
+- **Agent-browser QA**: Cannot reach localhost (sandbox isolation). QA via curl + dev.log.
+- **Admin Search**: Currently search-only (no edit navigation). Can add click-to-edit next round.
+- **Next-phase feature ideas** (priority order):
+  1. Google Analytics 4 + Meta Pixel conditional loading based on cookie preferences
+  2. Export leads/applications by date range (CSV with date filter)
+  3. Email notification on new lead (SMTP integration)
+  4. PWA offline support with service worker
+  5. Content versioning / draft preview for blog posts
+  6. Admin search: click result to navigate to edit form
+  7. Apply gradient to more headings across careers, clients, news views
+  8. Before/after slider enhancement with slider position tooltip
+  9. Animated stat counters with scroll-trigger
+  10. Hero parallax depth layers
+- **Styling enhancements**: Gradient borders on featured project cards, card hover glow, skeleton→content fade on admin panels.
