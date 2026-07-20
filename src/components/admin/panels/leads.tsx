@@ -276,12 +276,12 @@ export function AdminLeads() {
                     <Badge variant="outline" className={statusColors[lead.status as string] ?? ""}>
                       {lead.status as string}
                     </Badge>
-                    {lead.projectBudget && (
+                    {Boolean(lead.projectBudget) && (
                       <Badge variant="secondary" className="text-xs">{lead.projectBudget as string}</Badge>
                     )}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
-                    {lead.company && (
+                    {Boolean(lead.company) && (
                       <div className="flex items-center gap-2"><Building2 className="h-3.5 w-3.5" />{lead.company as string}</div>
                     )}
                     <div className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" />{lead.email as string}</div>

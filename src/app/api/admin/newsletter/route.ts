@@ -3,7 +3,7 @@
 // ============================================================================
 
 import { db } from "@/lib/db";
-import { ok, fail, requireAdmin, isErrorResponse } from "@/lib/api";
+import { ok, requireAdmin, isErrorResponse } from "@/lib/api";
 import type { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {

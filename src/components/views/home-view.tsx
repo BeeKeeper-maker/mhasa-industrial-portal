@@ -16,11 +16,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { SectionHeading, AnimatedCounter, FadeIn, GoldDivider } from "@/components/site/primitives";
 import { ServiceCard, ProjectCard, TestimonialCard } from "@/components/site/cards";
 import { Icon } from "@/components/site/icon";
-import { useSiteData, useProjects, useServices } from "@/lib/hooks/use-queries";
+import { useSiteData, useProjects } from "@/lib/hooks/use-queries";
 import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
 import { useParallax } from "@/lib/hooks/use-parallax";
@@ -49,7 +48,7 @@ export function HomeView() {
 function HeroSection() {
   const { data: siteData } = useSiteData();
   const setView = useAppStore((s) => s.setView);
-  const { t, locale, pick } = useLocale();
+  const { t, pick } = useLocale();
   const heroes = siteData?.heroes ?? [];
   const [index, setIndex] = useState(0);
 
@@ -242,7 +241,7 @@ function TrustBar() {
 // ============================================================================
 function AboutPreview() {
   const setView = useAppStore((s) => s.setView);
-  const { t, locale } = useLocale();
+  const { locale } = useLocale();
   const { ref: aboutImageRef, y: aboutImageY } = useParallax(40);
 
   return (
@@ -455,7 +454,7 @@ function WhyChooseUs() {
 function StatsSection() {
   const { data: siteData } = useSiteData();
   const stats = siteData?.stats ?? [];
-  const { t, locale } = useLocale();
+  const { locale } = useLocale();
 
   if (stats.length === 0) return null;
 
@@ -531,7 +530,7 @@ function FeaturedProjects() {
 function ClientsMarquee() {
   const { data: siteData } = useSiteData();
   const clients = siteData?.clients ?? [];
-  const { t, locale } = useLocale();
+  const { locale } = useLocale();
 
   if (clients.length === 0) return null;
 
@@ -580,7 +579,7 @@ function ClientsMarquee() {
 function TestimonialsSection() {
   const { data: siteData } = useSiteData();
   const testimonials = siteData?.testimonials ?? [];
-  const { t, locale } = useLocale();
+  const { locale } = useLocale();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -657,7 +656,7 @@ function TestimonialsSection() {
 // ============================================================================
 function CTASection() {
   const setView = useAppStore((s) => s.setView);
-  const { t, locale } = useLocale();
+  const { t, pick } = useLocale();
   const { data: siteData } = useSiteData();
   const settings = siteData?.settings;
 

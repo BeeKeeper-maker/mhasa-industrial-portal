@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, type ImgProps } from "react";
+import { useState } from "react";
 import Image, { type ImageProps } from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +50,3 @@ export function SmartImage({
     </div>
   );
 }
-
-// Re-export type for convenience
-export type { ImgProps };

@@ -24,14 +24,11 @@ export interface ResourceConfig {
 
 export type ResourceKey =
   | "services" | "projects" | "blog" | "team" | "gallery"
-  | "testimonials" | "clients" | "careers" | "faqs" | "heroes" | "stats";
+  | "testimonials" | "clients" | "careers" | "faqs" | "heroes" | "stats"
+  | "settings" | "activity";
 
-const slugField: FieldConfig = {
-  name: "slug", label: "Slug (URL)", type: "text", required: true,
-  placeholder: "lowercase-with-dashes", fullWidth: true,
-};
-
-export const resourceConfigs: Record<ResourceKey, ResourceConfig> = {
+// Settings and activity have special handling in ResourceManager (not in this config)
+export const resourceConfigs: Partial<Record<ResourceKey, ResourceConfig>> = {
   services: {
     titleField: "title",
     subtitleField: "excerpt",
@@ -208,6 +205,7 @@ export const resourceConfigs: Record<ResourceKey, ResourceConfig> = {
       { name: "subtitleAr", label: "Subtitle (Arabic)", type: "textarea", rows: 2, fullWidth: true },
       { name: "imageUrl", label: "Background Image URL", type: "url", required: true, fullWidth: true },
       { name: "ctaText", label: "CTA Button Text", type: "text" },
+      { name: "ctaTextAr", label: "CTA Button Text (Arabic)", type: "text" },
       { name: "ctaLink", label: "CTA Link (view name)", type: "text", placeholder: "services / projects / contact" },
       { name: "sortOrder", label: "Sort Order", type: "number", defaultValue: 0 },
       { name: "isActive", label: "Active", type: "boolean", defaultValue: true },

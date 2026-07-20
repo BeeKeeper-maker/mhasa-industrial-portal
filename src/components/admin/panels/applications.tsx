@@ -259,7 +259,7 @@ export function AdminApplications() {
                 <div className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" />{app.phone as string}</div>
               </div>
 
-              {app.coverLetter && (
+              {Boolean(app.coverLetter) && (
                 <div className="mt-3 rounded-lg bg-muted/50 p-3">
                   <p className="text-xs text-muted-foreground line-clamp-3">{app.coverLetter as string}</p>
                 </div>
@@ -272,7 +272,7 @@ export function AdminApplications() {
                     {STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                {app.resumeUrl && (
+                {Boolean(app.resumeUrl) && (
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="h-8"><FileText className="h-3.5 w-3.5" /></Button>

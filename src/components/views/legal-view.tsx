@@ -525,7 +525,7 @@ const PRIVACY_DOC: LegalDocument = {
               <li>Processing and evaluating job applications and communicating with candidates regarding open positions.</li>
               <li>Providing, maintaining, and improving our services, including tailoring content to your interests.</li>
               <li>Sending administrative information such as policy updates, security alerts, and service notifications.</li>
-              <li>Analyzing website usage trends to enhance user experience and optimize our Site's performance.</li>
+              <li>Analyzing website usage trends to enhance user experience and optimize our Site&apos;s performance.</li>
               <li>Detecting, preventing, and addressing technical issues, fraud, security breaches, or other misuse of our Site.</li>
               <li>Complying with our legal and regulatory obligations under Saudi law, including tax, labor, and safety regulations.</li>
             </ul>
@@ -745,7 +745,7 @@ const PRIVACY_DOC: LegalDocument = {
               </li>
               <li className="flex items-start gap-2">
                 <Scale className="h-4 w-4 text-gold mt-1 shrink-0" />
-                <span><strong>Data Protection Officer:</strong> For PDPL-related requests, mark your email with the subject line \"DPO Request\".</span>
+                <span><strong>Data Protection Officer:</strong> For PDPL-related requests, mark your email with the subject line &quot;DPO Request&quot;.</span>
               </li>
             </ul>
           ),
@@ -765,7 +765,7 @@ const PRIVACY_DOC: LegalDocument = {
               </li>
               <li className="flex items-start gap-2">
                 <Scale className="h-4 w-4 text-gold mt-1 shrink-0" />
-                <span><strong>مسؤول حماية البيانات:</strong> للطلبات المتعلقة بنظام حماية البيانات الشخصية، يُرجى وضع عنوان \"طلب DPO\" في بريدك.</span>
+                <span><strong>مسؤول حماية البيانات:</strong> للطلبات المتعلقة بنظام حماية البيانات الشخصية، يُرجى وضع عنوان &quot;طلب DPO&quot; في بريدك.</span>
               </li>
             </ul>
           ),

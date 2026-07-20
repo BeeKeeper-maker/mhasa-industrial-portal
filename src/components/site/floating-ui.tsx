@@ -121,6 +121,7 @@ export function CookieConsent() {
       const timer = setTimeout(() => setShow(true), 1500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, []);
 
   const handle = (accepted: boolean) => {

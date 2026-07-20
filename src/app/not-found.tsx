@@ -32,8 +32,8 @@ export default function NotFound() {
         </h2>
 
         <p className="mt-3 text-white/70 leading-relaxed">
-          The page you're looking for doesn't exist or has been moved.
-          Let's get you back on track.
+          The page you&apos;re looking for doesn&apos;t exist or has been moved.
+          Let&apos;s get you back on track.
         </p>
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">

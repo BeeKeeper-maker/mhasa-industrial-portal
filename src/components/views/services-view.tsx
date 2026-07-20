@@ -8,12 +8,11 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import {
-  ArrowRight, ChevronLeft, CheckCircle2, Sparkles, ShieldCheck,
-  Award, Clock, Zap, Target, MapPin, Building2, MessageCircle,
+  ArrowRight, ChevronLeft, CheckCircle2, ShieldCheck,
+  Award, Clock, Zap, MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   SectionHeading, FadeIn, GoldDivider,
 } from "@/components/site/primitives";
@@ -27,7 +26,6 @@ import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
 import { useWhatsApp } from "@/lib/hooks/use-whatsapp";
 import type { ServiceDTO } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 export function ServicesView() {
   const selectedSlug = useAppStore((s) => s.selectedServiceSlug);
@@ -41,7 +39,6 @@ export function ServicesView() {
 function ServicesList() {
   const { data: services, isLoading } = useServices();
   const { t, locale } = useLocale();
-  const setView = useAppStore((s) => s.setView);
   const list = services ?? [];
 
   return (
@@ -89,7 +86,6 @@ function ServiceDetail({ slug }: { slug: string }) {
   const { t, locale, pick } = useLocale();
   const resetSelection = useAppStore((s) => s.resetSelection);
   const setView = useAppStore((s) => s.setView);
-  const openProject = useAppStore((s) => s.openProject);
   const { shareService: waShareService } = useWhatsApp();
 
   if (isLoading) {
@@ -360,7 +356,7 @@ function ServiceDetail({ slug }: { slug: string }) {
 // Why Our Services — feature highlights.
 // ============================================================================
 function WhyOurServices() {
-  const { t, locale } = useLocale();
+  const { locale } = useLocale();
 
   const features = [
     {

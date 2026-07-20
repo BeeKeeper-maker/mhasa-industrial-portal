@@ -6,8 +6,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Search, Phone, ChevronDown, Shield, Globe, Download } from "lucide-react";
+import { motion } from "framer-motion";
+import { Menu, X, Search, Phone, ChevronDown, Shield, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { useAppStore, type ViewKey } from "@/lib/store";

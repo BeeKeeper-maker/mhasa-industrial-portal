@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   SectionHeading, AnimatedCounter, FadeIn, GoldDivider,
 } from "@/components/site/primitives";
@@ -22,7 +21,6 @@ import { useTeam, useSiteData } from "@/lib/hooks/use-queries";
 import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
 import type { TeamMemberDTO } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 export function AboutView() {
   return (
@@ -425,7 +423,7 @@ function CompanyStrength() {
 // Leadership Team — grid of team member cards.
 // ============================================================================
 function LeadershipTeam() {
-  const { t, locale, pick } = useLocale();
+  const { t, locale } = useLocale();
   const { data: team, isLoading } = useTeam();
   const members = team ?? [];
 
@@ -461,7 +459,7 @@ function LeadershipTeam() {
 }
 
 function TeamMemberCard({ member, index }: { member: TeamMemberDTO; index: number }) {
-  const { locale, pick } = useLocale();
+  const { pick } = useLocale();
   const name = pick(member.name, member.nameAr) ?? member.name;
   const designation = pick(member.designation, member.designationAr) ?? member.designation;
   const bio = pick(member.bio, member.bioAr);

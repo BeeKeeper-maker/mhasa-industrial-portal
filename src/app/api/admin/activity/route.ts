@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { ok, requireAdmin, isErrorResponse } from "@/lib/api";
 import type { NextRequest } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const auth = await requireAdmin();
   if (isErrorResponse(auth)) return auth;
 

@@ -8,7 +8,7 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, GitCompare, Plus, Check, ArrowRight, Building2, MapPin, Wallet, Calendar, Tag, Trash2 } from "lucide-react";
+import { X, GitCompare, Plus, ArrowRight, Building2, MapPin, Wallet, Calendar, Tag, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useProjects } from "@/lib/hooks/use-queries";

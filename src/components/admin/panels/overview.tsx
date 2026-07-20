@@ -6,10 +6,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Phone, Users, Building2, FileText, TrendingUp, ArrowUpRight, Mail, Calendar } from "lucide-react";
+import { Phone, Users, FileText, TrendingUp, ArrowUpRight, Mail, Calendar } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   LeadsOverTimeChart, ApplicationsByStatusChart, LeadsByStatusChart,
   ContentCountsGrid, TopCategoriesChart,
@@ -32,7 +31,6 @@ export function AdminOverview() {
   const [days, setDays] = useState(30);
   const { data: leads } = useQuery({ queryKey: ["admin-leads"], queryFn: () => fetchAdmin("/api/admin/leads") });
   const { data: applications } = useQuery({ queryKey: ["admin-applications"], queryFn: () => fetchAdmin("/api/admin/applications") });
-  const { data: services } = useQuery({ queryKey: ["admin-services"], queryFn: () => fetchAdmin("/api/admin/services") });
   const { data: projects } = useQuery({ queryKey: ["admin-projects"], queryFn: () => fetchAdmin("/api/admin/projects") });
   const { data: newsletter } = useQuery({ queryKey: ["admin-newsletter"], queryFn: () => fetchAdmin("/api/admin/newsletter") });
   const { data: activity } = useQuery({ queryKey: ["admin-activity"], queryFn: () => fetchAdmin("/api/admin/activity") });
@@ -53,7 +51,7 @@ export function AdminOverview() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Dashboard Overview</h1>
-          <p className="text-sm text-muted-foreground mt-1">Welcome back. Here's what's happening with your site.</p>
+          <p className="text-sm text-muted-foreground mt-1">Welcome back. Here&apos;s what&apos;s happening with your site.</p>
         </div>
         {/* Date range selector */}
         <div className="flex items-center gap-1.5 rounded-lg border border-border bg-card p-1">

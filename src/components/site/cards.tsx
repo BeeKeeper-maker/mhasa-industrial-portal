@@ -10,7 +10,6 @@ import { useState } from "react";
 import { ArrowRight, MapPin, Calendar, Quote, ArrowUpRight, Building2, Star, Check, Plus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/site/icon";
 import { useLocale } from "@/lib/hooks/use-locale";
 import { useAppStore } from "@/lib/store";

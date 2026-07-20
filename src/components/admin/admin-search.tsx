@@ -6,7 +6,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, X, Building2, Briefcase, FileText, Users, Image as ImageIcon,
   Star, Award, HelpCircle, BarChart3, Loader2, ArrowRight,
@@ -187,7 +186,7 @@ export function AdminSearch({ open, onOpenChange }: AdminSearchProps) {
             </div>
           ) : results.length === 0 ? (
             <div className="py-16 text-center text-sm text-muted-foreground">
-              No results for "{query}"
+              No results for &quot;{query}&quot;
             </div>
           ) : (
             <div className="space-y-1">

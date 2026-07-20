@@ -175,6 +175,7 @@ export interface HeroSlideDTO {
   subtitleAr: string | null;
   imageUrl: string | null;
   ctaText: string | null;
+  ctaTextAr: string | null;
   ctaLink: string | null;
 }
 

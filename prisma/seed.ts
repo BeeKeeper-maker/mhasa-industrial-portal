@@ -5,6 +5,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 const db = new PrismaClient();
 
@@ -12,19 +13,33 @@ async function main() {
   console.log("🌱 Seeding MHASA database...");
 
   // ---- Admin user ----
-  const passwordHash = await bcrypt.hash("Admin@2024", 12);
-  const admin = await db.user.upsert({
+  // Check if admin already exists so we only generate + log the password once.
+  const existingAdmin = await db.user.findUnique({
     where: { email: "admin@mhaksa.com" },
-    update: {},
-    create: {
-      email: "admin@mhaksa.com",
-      name: "MHASA Administrator",
-      passwordHash,
-      role: "ADMIN",
-      isActive: true,
-    },
+    select: { id: true },
   });
-  console.log(`  ✓ Admin user: ${admin.email} (password: Admin@2024)`);
+
+  let adminId: string;
+  if (existingAdmin) {
+    adminId = existingAdmin.id;
+    console.log("  ✓ Admin user already exists: admin@mhaksa.com (skipped creation)");
+  } else {
+    const password = crypto.randomBytes(12).toString("base64url");
+    const passwordHash = await bcrypt.hash(password, 12);
+    const admin = await db.user.create({
+      data: {
+        email: "admin@mhaksa.com",
+        name: "MHASA Administrator",
+        passwordHash,
+        role: "ADMIN",
+        isActive: true,
+      },
+    });
+    adminId = admin.id;
+    console.log(`\n✅ Admin user created: ${admin.email}`);
+    console.log(`🔑 Password: ${password}`);
+    console.log(`⚠️  Save this password — it will not be shown again.\n`);
+  }
 
   // ---- Services ----
   const services = [
@@ -446,7 +461,7 @@ async function main() {
       tags: JSON.stringify(["RTR", "Oil & Gas", "Piping"]),
       status: "PUBLISHED",
       publishedAt: new Date("2024-01-15"),
-      authorId: admin.id,
+      authorId: adminId,
     },
     {
       slug: "mhasa-aramco-jubail-completion",
@@ -458,7 +473,7 @@ async function main() {
       tags: JSON.stringify(["Aramco", "Jubail", "Project Completion"]),
       status: "PUBLISHED",
       publishedAt: new Date("2023-09-20"),
-      authorId: admin.id,
+      authorId: adminId,
     },
     {
       slug: "fiberglass-tank-design-principles",
@@ -470,7 +485,7 @@ async function main() {
       tags: JSON.stringify(["Fiberglass", "Tanks", "Engineering"]),
       status: "PUBLISHED",
       publishedAt: new Date("2024-02-10"),
-      authorId: admin.id,
+      authorId: adminId,
     },
   ];
   for (const p of posts) {

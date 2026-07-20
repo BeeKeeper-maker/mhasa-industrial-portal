@@ -272,7 +272,7 @@ export function LeadsByStatusChart({ days = 30 }: { days?: number }) {
 // Content Counts Grid — quick stat tiles for all content types
 // ============================================================================
 export function ContentCountsGrid() {
-  const { data, isLoading } = useQuery({ queryKey: ["admin-stats"], queryFn: fetchStats });
+  const { data, isLoading } = useQuery({ queryKey: ["admin-stats"], queryFn: () => fetchStats() });
 
   if (isLoading || !data) {
     return (
@@ -320,7 +320,7 @@ export function ContentCountsGrid() {
 // Top Project Categories — bar chart with value
 // ============================================================================
 export function TopCategoriesChart() {
-  const { data, isLoading } = useQuery({ queryKey: ["admin-stats"], queryFn: fetchStats });
+  const { data, isLoading } = useQuery({ queryKey: ["admin-stats"], queryFn: () => fetchStats() });
 
   if (isLoading) {
     return (

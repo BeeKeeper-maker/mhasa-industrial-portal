@@ -36,7 +36,7 @@ import { useProjects, useProject } from "@/lib/hooks/use-queries";
 import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
 import { useWhatsApp } from "@/lib/hooks/use-whatsapp";
-import type { ProjectDTO, ServiceDTO } from "@/lib/types";
+import type { ServiceDTO } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function ProjectsView() {

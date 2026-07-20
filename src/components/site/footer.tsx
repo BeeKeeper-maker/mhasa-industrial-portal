@@ -11,7 +11,6 @@ import { useLocale } from "@/lib/hooks/use-locale";
 import { useSiteData } from "@/lib/hooks/use-queries";
 import { useServices } from "@/lib/hooks/use-queries";
 import { NewsletterWidget } from "@/components/site/newsletter-widget";
-import type { Locale } from "@/lib/types";
 
 export function Footer() {
   const setView = useAppStore((s) => s.setView);

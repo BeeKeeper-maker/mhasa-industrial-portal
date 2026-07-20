@@ -5,6 +5,7 @@
 
 "use client";
 
+import { useState } from "react";
 import { Clock, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -44,13 +45,16 @@ export function LastUpdatedBadge({
   locale = "en",
   showIcon = true,
 }: LastUpdatedBadgeProps) {
+  // Read "now" once on mount — calling Date.now() during render is impure.
+  const [now] = useState(() => Date.now());
+
   if (!date) return null;
 
   const dateObj = typeof date === "string" ? new Date(date) : date;
   if (isNaN(dateObj.getTime())) return null;
 
   const relative = getRelativeTime(dateObj, locale);
-  const isRecent = Date.now() - dateObj.getTime() < 24 * 60 * 60 * 1000; // < 24h
+  const isRecent = now - dateObj.getTime() < 24 * 60 * 60 * 1000; // < 24h
 
   return (
     <span

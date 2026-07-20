@@ -63,7 +63,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET ?? "mhasa-dev-secret-change-in-production-2024",
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 export async function hashPassword(password: string): Promise<string> {

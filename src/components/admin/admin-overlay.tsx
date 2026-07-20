@@ -8,12 +8,11 @@
 import { useState, useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Shield, Lock, Loader2, LogOut, LayoutDashboard } from "lucide-react";
+import { X, Shield, Lock, Loader2, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAppStore } from "@/lib/store";
-import { useLocale } from "@/lib/hooks/use-locale";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
 import { toast } from "sonner";
 
@@ -21,7 +20,6 @@ export function AdminOverlay() {
   const adminOpen = useAppStore((s) => s.adminOpen);
   const setAdminOpen = useAppStore((s) => s.setAdminOpen);
   const { data: session, status } = useSession();
-  const { locale } = useLocale();
 
   // Close on Escape
   useEffect(() => {
@@ -105,10 +103,9 @@ export function AdminOverlay() {
 
 // -------- Login Form --------
 function AdminLogin() {
-  const [email, setEmail] = useState("admin@mhaksa.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { locale } = useLocale();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,12 +186,6 @@ function AdminLogin() {
               )}
             </Button>
           </form>
-
-          <div className="mt-6 rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
-            <p className="font-semibold mb-1">Demo Credentials:</p>
-            <p>Email: admin@mhaksa.com</p>
-            <p>Password: Admin@2024</p>
-          </div>
         </div>
       </motion.div>
     </div>

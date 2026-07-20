@@ -166,6 +166,7 @@ export const heroSlideSchema = z.object({
   subtitleAr: z.string().optional().nullable(),
   imageUrl: z.string().url().optional().nullable().or(z.literal("")),
   ctaText: z.string().optional().nullable(),
+  ctaTextAr: z.string().optional().nullable(),
   ctaLink: z.string().optional().nullable(),
   sortOrder: z.number().int().default(0),
   isActive: z.boolean().default(true),

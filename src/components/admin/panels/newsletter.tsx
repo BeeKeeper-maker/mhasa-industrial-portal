@@ -111,7 +111,7 @@ export function AdminNewsletter() {
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-foreground truncate">{s.email as string}</div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    {s.name && <span>{s.name as string}</span>}
+                    {Boolean(s.name) && <span>{s.name as string}</span>}
                     <span>·</span>
                     <span>{(s.source as string) ?? "footer"}</span>
                     <span>·</span>

@@ -9,7 +9,11 @@ import { logActivity } from "@/lib/log-activity";
 import { getClientIp } from "@/lib/rate-limit";
 import type { ZodSchema } from "zod";
 
-/** Minimal Prisma-delegate shape — `args: any` so any Prisma model delegate can be assigned. */
+/** Minimal Prisma-delegate shape — `args: any` is required because Prisma's delegate
+ *  types are invariant in their args (e.g. `TestimonialFindUniqueArgs`) and cannot
+ *  be satisfied by a generic `Record<string, unknown>` without breaking assignability
+ *  of the real Prisma client delegates. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PrismaListDelegate<T> = { findMany: (args?: any) => Promise<T[]> };
 
 interface ListConfig<T> {
@@ -30,6 +34,7 @@ export function makeListHandler<T>({ model, orderBy = { createdAt: "desc" }, inc
 }
 
 /** Minimal Prisma-delegate shape for create-only models. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PrismaCreateDelegate<TEntity> = { create: (args: { data: any }) => Promise<TEntity> };
 
 interface CreateConfig<TInput, TEntity> {
@@ -93,8 +98,11 @@ export function makeCreateHandler<TInput, TEntity>({
 
 /** Minimal Prisma-delegate shape for single-record (id-keyed) operations. */
 type PrismaEntityDelegate<TEntity> = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   findUnique: (args: any) => Promise<TEntity | null>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   update: (args: any) => Promise<TEntity>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   delete: (args: any) => Promise<TEntity>;
 };
 

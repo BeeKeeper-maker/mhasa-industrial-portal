@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -106,6 +106,15 @@ export function ResourceManager({ resource, title }: ResourceManagerProps) {
     return <ActivityLogViewer />;
   }
 
+  // For all other resources, config must exist
+  if (!config) {
+    return (
+      <Card className="p-12 text-center text-muted-foreground">
+        Configuration not found for &quot;{resource}&quot;.
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -142,7 +151,7 @@ export function ResourceManager({ resource, title }: ResourceManagerProps) {
             <Card key={item.id as string} className="p-4 group">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  {(config.imageField && item[config.imageField]) && (
+                  {(config.imageField && Boolean(item[config.imageField])) && (
                     <div className="mb-2 aspect-video rounded-lg overflow-hidden bg-muted">
                       <img
                         src={item[config.imageField] as string}
@@ -154,7 +163,7 @@ export function ResourceManager({ resource, title }: ResourceManagerProps) {
                   <h3 className="font-semibold text-foreground truncate">
                     {String(item[config.titleField] ?? "Untitled")}
                   </h3>
-                  {config.subtitleField && item[config.subtitleField] && (
+                  {config.subtitleField && Boolean(item[config.subtitleField]) && (
                     <p className="text-xs text-muted-foreground truncate mt-0.5">
                       {String(item[config.subtitleField])}
                     </p>
@@ -219,7 +228,7 @@ function ResourceForm({
   onSubmit,
   loading,
 }: {
-  config: typeof resourceConfigs[ResourceKey];
+  config: NonNullable<typeof resourceConfigs[ResourceKey]>;
   initial: Record<string, unknown> | null;
   onSubmit: (data: Record<string, unknown>) => void;
   loading: boolean;
@@ -484,7 +493,7 @@ function ActivityLogViewer() {
               <div key={log.id} className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted/50">
                 <Badge variant="outline" className="text-xs font-mono">{String(log.action)}</Badge>
                 <span className="text-sm text-foreground">{String(log.entity)}</span>
-                {log.entityId && <span className="text-xs text-muted-foreground font-mono">{String(log.entityId).slice(0, 8)}</span>}
+                {Boolean(log.entityId) && <span className="text-xs text-muted-foreground font-mono">{String(log.entityId).slice(0, 8)}</span>}
                 <span className="ms-auto text-xs text-muted-foreground">
                   {((log.user as { name?: string })?.name ?? "System")} · {new Date(log.createdAt as string).toLocaleString()}
                 </span>

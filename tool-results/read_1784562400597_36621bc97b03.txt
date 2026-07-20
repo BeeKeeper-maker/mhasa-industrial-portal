@@ -1,0 +1,567 @@
+     1→     1→# CTO Pre-Delivery Audit Report
+     2→     2→### MHASA Corporate Website — Next.js 16 · TypeScript 5 · Prisma · NextAuth
+     3→     3→
+     4→     4→**Audit performed:** 2024-Q4 pre-delivery review
+     5→     5→**Auditor role:** Principal Software Architect / Fractional CTO
+     6→     6→**Project root:** `/home/z/my-project/`
+     7→     7→**Method:** Static review of all `src/`, `prisma/`, `public/`, and root config files + execution of `bunx tsc --noEmit` and `bun run lint`.
+     8→     8→
+     9→     9→---
+    10→    10→
+    11→    11→## Executive Summary
+    12→    12→
+    13→    13→**Verdict: ❌ NOT READY for delivery.** The application is functionally feature-complete (14+ worklog rounds, 35+ features) but ships with **configuration defects that hide TypeScript errors at build time, hardcoded production credentials in the UI, a weak NextAuth secret fallback, no App Router error boundaries, and a non-standard single-route architecture that breaks SEO/a11y expectations**.
+    14→    14→
+    15→    15→| Severity | Count |
+    16→    16→|---|---|
+    17→    17→| 🔴 Critical (blocks delivery) | **8** |
+    18→    18→| 🟠 High | **11** |
+    19→    19→| 🟡 Medium | **14** |
+    20→    20→| 🟢 Low | **9** |
+    21→    21→| **Total findings** | **42** |
+    22→    22→
+    23→    23→### Headline issues
+    24→    24→
+    25→    25→1. `next.config.ts` has `typescript.ignoreBuildErrors: true` and `reactStrictMode: false` — **the production build silently swallows every TS error**. There are currently **23 TypeScript errors** in `src/` that would block a clean build.
+    26→    26→2. `src/lib/auth.ts:66` ships a hardcoded fallback NextAuth secret `"mhasa-dev-secret-change-in-production-2024"`, and `.env` does not define `NEXTAUTH_SECRET` — so production will silently use the public dev secret, allowing JWT forgery.
+    27→    27→3. `src/components/admin/admin-overlay.tsx:108,193-197` hardcodes the admin email **and the admin password** (`Admin@2024`) into the deployed UI as "Demo Credentials". This must be removed before delivery.
+    28→    28→4. `prisma/seed.ts:15` seeds the production database with a weak known password (`Admin@2024`). The seeded admin user must be force-prompted to change it on first login.
+    29→    29→5. The app uses **Zustand view-state routing** instead of the Next.js App Router. The "single visible `/` route" constraint noted in the worklog should be revisited — see Architecture Recommendations §A.
+    30→    30→6. No `src/middleware.ts`, no `error.tsx`, no `loading.tsx`, no `global-error.tsx`, no `robots.ts`, no `manifest.ts` (uses `public/manifest.json` instead).
+    31→    31→7. File-upload endpoint (`/api/careers/apply`) accepts **any MIME type, any size**, and stores the resume as a base64 data URL inside SQLite — a denial-of-service and disk-fill risk.
+    32→    32→8. ESLint config disables ~30 essential rules (`@typescript-eslint/no-explicit-any`, `react-hooks/exhaustive-deps`, `no-console`, `prefer-const`, `no-unreachable`, …) — the "0 lint errors" claim in the worklog is a false positive.
+    33→    33→
+    34→    34→### Top 5 critical issues (detailed)
+    35→    35→
+    36→    36→| # | File:Line | Issue |
+    37→    37→|---|---|---|
+    38→    38→| C1 | `next.config.ts:6` | `typescript.ignoreBuildErrors: true` masks 23 compile errors |
+    39→    39→| C2 | `src/lib/auth.ts:66` | Hardcoded NextAuth secret fallback; no env var set |
+    40→    40→| C3 | `src/components/admin/admin-overlay.tsx:108,194-196` | Admin email + password hardcoded into shipped UI |
+    41→    41→| C4 | `src/app/api/careers/apply/route.ts:29-33` | File upload with no MIME/size validation, stored as base64 in SQLite |
+    42→    42→| C5 | `eslint.config.mjs:10-44` | ~30 ESLint rules disabled — lint cleanliness claim is false |
+    43→    43→
+    44→    44→---
+    45→    45→
+    46→    46→## Critical Issues (Must Fix Before Delivery)
+    47→    47→
+    48→    48→### C1. `ignoreBuildErrors` and disabled React Strict Mode hide 23 TypeScript errors
+    49→    49→- **File**: `next.config.ts:5-8`
+    50→    50→- **Problem**: 
+    51→    51→  ```ts
+    52→    52→  typescript: { ignoreBuildErrors: true },
+    53→    53→  reactStrictMode: false,
+    54→    54→  ```
+    55→    55→  `bunx tsc --noEmit` reports **23 errors in `src/`** (plus 4 in `examples/` and `skills/` which are correctly excluded from the build but not from `tsconfig.json`'s `include` glob). Because the build ignores these, the production bundle ships with type holes that produce runtime bugs.
+    56→    56→- **Impact**: Production runtime defects that TypeScript was supposed to catch. Examples already in the codebase:
+    57→    57→  - `src/components/views/home-view.tsx:708` uses `pick()` but it is **never destructured from `useLocale()`** in `CTASection` → runtime `ReferenceError` when locale is Arabic.
+    58→    58→  - `src/components/views/home-view.tsx:145` references `current.ctaTextAr` which is **not on `HeroSlideDTO`** → undefined at runtime; Arabic CTA falls back silently.
+    59→    59→  - `src/components/admin/charts/index.tsx:275,323` pass `fetchStats` directly as a queryFn (signature mismatch) — Recharts incorrectly typed as `{}`; `data.contentCounts` and `data.topCategories` will throw at runtime when admin opens the Overview tab.
+    60→    60→  - `src/components/admin/admin-dashboard.tsx:135-136` passes `"settings"` and `"activity"` to `ResourceManager` but `ResourceKey` excludes those values — runtime comparison in `resource-manager.tsx:102,105` always falls through.
+    61→    61→- **Fix**: 
+    62→    62→  1. Set `typescript.ignoreBuildErrors: false` and `reactStrictMode: true` in `next.config.ts`.
+    63→    63→  2. Add `eslint: { ignoreDuringBuilds: false }` (default — remove any override).
+    64→    64→  3. Fix all 23 TypeScript errors (see "Files to Create/Modify Summary" below).
+    65→    65→  4. Re-run `bunx tsc --noEmit` until clean.
+    66→    66→
+    67→    67→### C2. Hardcoded NextAuth secret fallback + missing env var
+    68→    68→- **File**: `src/lib/auth.ts:66`, `.env` (only contains `DATABASE_URL`)
+    69→    69→- **Problem**: 
+    70→    70→  ```ts
+    71→    71→  secret: process.env.NEXTAUTH_SECRET ?? "mhasa-dev-secret-change-in-production-2024",
+    72→    72→  ```
+    73→    73→  `.env` does **not** define `NEXTAUTH_SECRET`, so production silently uses the public dev secret. Anyone who reads the public GitHub repo can forge a valid JWT and access the admin API.
+    74→    74→- **Impact**: Complete authentication bypass. **CVSS ~9.8 (Critical).**
+    75→    75→- **Fix**:
+    76→    76→  1. Remove the `?? "..."` fallback so the app **fails fast** if `NEXTAUTH_SECRET` is unset:
+    77→    77→     ```ts
+    78→    78→     const secret = process.env.NEXTAUTH_SECRET;
+    79→    79→     if (!secret) throw new Error("NEXTAUTH_SECRET must be set");
+    80→    80→     ```
+    81→    81→  2. Generate a 64-byte random hex secret (`openssl rand -hex 64`) and add it to `.env` / deployment env vars.
+    82→    82→  3. Add `.env.example` documenting all required vars (`DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `NODE_ENV`).
+    83→    83→  4. Run `git log --all -p -- .env` to confirm the secret was never committed; if it was, rotate immediately.
+    84→    84→
+    85→    85→### C3. Admin credentials hardcoded in shipped UI
+    86→    86→- **File**: `src/components/admin/admin-overlay.tsx:108,194-197`, `prisma/seed.ts:15,27,569`
+    87→    87→- **Problem**:
+    88→    88→  ```tsx
+    89→    89→  const [email, setEmail] = useState("admin@mhaksa.com");   // line 108
+    90→    90→  ...
+    91→    91→  <p>Email: admin@mhaksa.com</p>                              // line 195
+    92→    92→  <p>Password: Admin@2024</p>                                 // line 196
+    93→    93→  ```
+    94→    94→  The login form pre-fills the admin email and displays the password to any visitor who opens the Admin overlay. `prisma/seed.ts` seeds the production DB with this same password.
+    95→    95→- **Impact**: Any visitor can read the credentials off the screen and log into the admin panel. **Authentication effectively public.**
+    96→    96→- **Fix**:
+    97→    97→  1. Delete the entire "Demo Credentials" panel (`admin-overlay.tsx:193-197`).
+    98→    98→  2. Remove the default value from `useState("admin@mhaksa.com")` → `useState("")`.
+    99→    99→  3. Update `prisma/seed.ts` to either:
+   100→   100→     - Skip seeding the admin user if one already exists, OR
+   101→   101→     - Generate a random password at seed time and log it **once** to the server console (never to the client).
+   102→   102→  4. Force password change on first login (add `mustChangePassword: Boolean` to `User` schema).
+   103→   103→  5. Rotate the existing admin password immediately before delivery.
+   104→   104→
+   105→   105→### C4. File upload endpoint accepts any MIME / any size, stored as base64 in SQLite
+   106→   106→- **File**: `src/app/api/careers/apply/route.ts:20-33`
+   107→   107→- **Problem**:
+   108→   108→  ```ts
+   109→   109→  const resumeFile = formData.get("resume") as File | null;
+   110→   110→  if (resumeFile && resumeFile.size > 0) {
+   111→   111→    const buffer = Buffer.from(await resumeFile.arrayBuffer());
+   112→   112→    resumeUrl = `data:${resumeFile.type};base64,${buffer.toString("base64")}`;
+   113→   113→  }
+   114→   114→  ```
+   115→   115→  No MIME-type whitelist, no size limit, no virus scan, no extension validation. The file is then persisted into a SQLite TEXT column via Prisma (`JobApplication.resumeUrl`). A malicious 100 MB upload is fully buffered in memory and then base64-encoded (33% larger) before being written to the DB.
+   116→   116→- **Impact**:
+   117→   117→  - **Denial of service**: a single 50 MB upload will OOM the Node process and bloat the SQLite file.
+   118→   118→  - **Stored XSS via SVG**: an attacker can upload `evil.svg` containing script; if the admin downloads/views it inline in a browser, script executes in the admin origin.
+   119→   119→  - **DB bloat**: base64 resumes grow the SQLite file indefinitely with no cleanup path.
+   120→   120→- **Fix**:
+   121→   121→  1. Whitelist MIME types: `["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]`.
+   122→   122→  2. Enforce 5 MB max size: `if (resumeFile.size > 5 * 1024 * 1024) return fail("Resume must be ≤ 5 MB", 413);`
+   123→   123→  3. Validate file signature (magic bytes), not just the declared MIME.
+   124→   124→  4. Store the file in object storage (S3 / OSS / local disk under `/uploads/`) — never in the database.
+   125→   125→  5. Generate an unguessable filename (e.g., `crypto.randomUUID() + ext`) and serve via a streaming endpoint with `Content-Disposition: attachment`.
+   126→   126→  6. Add a cleanup cron to delete unclaimed resumes after 90 days.
+   127→   127→
+   128→   128→### C5. ESLint config disables ~30 critical rules — "0 errors" claim is misleading
+   129→   129→- **File**: `eslint.config.mjs:9-45`
+   130→   130→- **Problem**: The ESLint config disables nearly every rule that catches real bugs:
+   131→   131→  - `@typescript-eslint/no-explicit-any` → off (allows `args?: any` in `crud-factory.ts`)
+   132→   132→  - `@typescript-eslint/no-unused-vars` → off (allows dead imports/vars)
+   133→   133→  - `@typescript-eslint/no-non-null-assertion` → off
+   134→   134→  - `@typescript-eslint/ban-ts-comment` → off (allows `@ts-ignore`)
+   135→   135→  - `react-hooks/exhaustive-deps` → off (allows stale-closure bugs)
+   136→   136→  - `@next/next/no-img-element` → off (allows raw `<img>` — performance/a11y hit)
+   137→   137→  - `prefer-const` → off
+   138→   138→  - `no-unreachable`, `no-fallthrough`, `no-useless-escape` → off
+   139→   139→  - `no-console`, `no-debugger` → off
+   140→   140→- **Impact**: Lint cleanliness is reported as "0 errors" in the worklog, but the linter is effectively a no-op. Real bugs (e.g., unused imports, stale closures, `<img>` instead of `<Image>`, unreachable code) pass silently.
+   141→   141→- **Fix**:
+   142→   142→  1. Remove **all** rule overrides — use the default `eslint-config-next/core-web-vitals` + `eslint-config-next/typescript` rule set.
+   143→   143→  2. Re-run `bun run lint` and fix every error.
+   144→   144→  3. Add `eslint: { ignoreDuringBuilds: false }` to `next.config.ts` so lint errors block the build.
+   145→   145→  4. Add a `lint-staged` hook (via Husky) so pre-commit runs ESLint with `--max-warnings 0`.
+   146→   146→
+   147→   147→### C6. No Next.js App Router error boundaries (`error.tsx`, `global-error.tsx`, `loading.tsx`)
+   148→   148→- **Files**: missing — `src/app/error.tsx`, `src/app/global-error.tsx`, `src/app/loading.tsx`
+   149→   149→- **Problem**: Only `src/app/not-found.tsx` exists. Any unhandled runtime error in a Server Component, route handler, or the root layout will render the default Next.js red error page or a blank screen. There is no `loading.tsx`, so navigating between lazy-loaded views shows nothing while the chunk downloads.
+   150→   150→- **Impact**: Poor UX and lost conversions; users hitting a server error have no recovery path. A single API timeout in the home view currently crashes the entire page.
+   151→   151→- **Fix**: Create:
+   152→   152→  - `src/app/error.tsx` (client component) — branded error card with "Try Again" button calling `reset()`.
+   153→   153→  - `src/app/global-error.tsx` — fallback for errors in the root layout itself (must render its own `<html>/<body>`).
+   154→   154→  - `src/app/loading.tsx` — full-page skeleton matching the home view structure.
+   155→   155→
+   156→   156→### C7. No `middleware.ts` — admin API routes have no defense-in-depth guard
+   157→   157→- **Files**: missing — `src/middleware.ts`
+   158→   158→- **Problem**: All `/api/admin/*` routes call `requireAdmin()` inside the handler (good), but there is no middleware-level guard. This means:
+   159→   159→  - Every admin route pays the cost of `getServerSession()` on every request.
+   160→   160→  - There is no centralized rate limiting for admin endpoints (only the public `contact`/`apply`/`newsletter` routes are rate-limited).
+   161→   161→  - There is no CSRF protection on session-cookie-authenticated mutations.
+   162→   162→- **Impact**: Brute-force and CSRF attacks against admin endpoints are easier than necessary.
+   163→   163→- **Fix**:
+   164→   164→  1. Add `src/middleware.ts` that intercepts `/api/admin/*` and short-circuits with 401 if no session cookie is present.
+   165→   165→  2. Add rate-limiting for admin login (`/api/auth/[...nextauth]`) — currently unthrottled.
+   166→   166→  3. Add CSRF token check for all mutation routes (or use `SameSite=Strict` cookies).
+   167→   167→
+   168→   168→### C8. In-memory rate limiter does not survive restarts and is per-process
+   169→   169→- **File**: `src/lib/rate-limit.ts:11`
+   170→   170→- **Problem**:
+   171→   171→  ```ts
+   172→   172→  const buckets = new Map<string, Bucket>();
+   173→   173→  ```
+   174→   174→  The token-bucket map lives in module memory. Under serverless/standalone deployment with multiple workers (or restarts), each process has its own map — an attacker distributing requests across workers gets N× the rate limit. A restart wipes all buckets.
+   175→   175→- **Impact**: Rate limits are ineffective in production multi-process deployments. The contact/apply/newsletter endpoints are effectively unthrottled.
+   176→   176→- **Fix**: Move rate-limit state to a shared store:
+   177→   177→  - **Simpler**: Upstash Redis with `@upstash/ratelimit` (serverless-friendly).
+   178→   178→  - **Self-hosted**: `ioredis` against a Redis container.
+   179→   179→  - **Single-process workaround (NOT recommended for prod)**: document that the deployment MUST be single-process and set `NEXT_PRIVATE_WORKER_COUNT=1`.
+   180→   180→
+   181→   181→---
+   182→   182→
+   183→   183→## High Priority Issues
+   184→   184→
+   185→   185→### H1. `tsconfig.json` is missing strict flags
+   186→   186→- **File**: `tsconfig.json:11-13`
+   187→   187→- **Problem**: `strict: true` is set, but `noImplicitAny: false` overrides it, and the following are missing:
+   188→   188→  - `noUnusedLocals` / `noUnusedParameters` (dead code accumulates silently)
+   189→   189→  - `noImplicitReturns` (functions silently return `undefined`)
+   190→   190→  - `noFallthroughCasesInSwitch`
+   191→   191→  - `forceConsistentCasingInFileNames` (already default in TS 5+ but should be explicit)
+   192→   192→  - `exactOptionalPropertyTypes` (catches `x?: T | undefined` vs `x?: T` bugs)
+   193→   193→- **Fix**: Add the flags above, then fix the resulting errors.
+   194→   194→
+   195→   195→### H2. ResourceKey type doesn't include `"settings"` and `"activity"` — runtime comparison is dead code
+   196→   196→- **Files**: `src/components/admin/resource-configs.ts:25-27`, `src/components/admin/resource-manager.tsx:102,105`, `src/components/admin/admin-dashboard.tsx:135-136`
+   197→   197→- **Problem**: `ResourceKey` is `"services" | "projects" | ... | "stats"` — **no** `"settings"` or `"activity"`. But `admin-dashboard.tsx:135-136` passes those strings to `<ResourceManager resource="settings" />`, and `resource-manager.tsx:102,105` does `if (resource === "settings") return <SettingsManager />`. Both are TypeScript errors (C1) AND the special-case branches never execute because the type system prevents the comparison.
+   198→   198→- **Impact**: Clicking "Site Settings" or "Activity Log" in the admin sidebar renders the generic CRUD list — settings & activity are unreachable in the admin UI.
+   199→   199→- **Fix**: Either widen `ResourceKey` to include `"settings" | "activity"` and keep the special-case branches, **or** add separate tab components for those two (cleaner).
+   200→   200→
+   201→   201→### H3. `HeroSlideDTO` is missing `ctaTextAr` — Arabic CTA silently falls back
+   202→   202→- **Files**: `src/lib/types.ts:170-179`, `src/components/views/home-view.tsx:145`, `prisma/schema.prisma:331` (has `ctaTextAr`), `src/lib/validations.ts:162-172` (no `ctaTextAr`)
+   203→   203→- **Problem**: The Prisma model has `ctaTextAr`, but the DTO omits it. The home view calls `pick(current.ctaText, current.ctaTextAr)` — at runtime `ctaTextAr` is `undefined` (TS error, but `pick` swallows it). The Zod `heroSlideSchema` also omits `ctaTextAr`, so even if the admin sends it, the API drops it on validation.
+   204→   204→- **Impact**: Arabic hero CTA button text can never be customized; always shows the English value or the default.
+   205→   205→- **Fix**:
+   206→   206→  1. Add `ctaTextAr: string | null` to `HeroSlideDTO` in `src/lib/types.ts:179`.
+   207→   207→  2. Add `ctaTextAr: z.string().optional().nullable()` to `heroSlideSchema` in `src/lib/validations.ts:169`.
+   208→   208→  3. Add `ctaTextAr` field to the `heroes` config in `src/components/admin/resource-configs.ts:199-215`.
+   209→   209→
+   210→   210→### H4. No pagination on admin list endpoints — returns ALL records
+   211→   211→- **Files**: `src/lib/crud-factory.ts:22-30` (`makeListHandler`), `src/app/api/admin/leads/route.ts:18-22`, `src/app/api/admin/applications/route.ts:17-22`, `src/app/api/admin/activity/route.ts:13-17`
+   212→   212→- **Problem**: Every admin GET list endpoint calls `model.findMany({ orderBy })` with no `take`/`skip`. As leads/applications/activity logs grow, the response payload grows unbounded. The activity endpoint has `take: 100`, but leads and applications do not.
+   213→   213→- **Impact**: Slow admin UI as data grows; potential OOM on very large tables.
+   214→   214→- **Fix**: Add `?page=1&pageSize=50` query parsing in `makeListHandler`, return `{ items, total, page, pageSize }` using the existing `PaginatedResponse<T>` type in `types.ts:209-214`.
+   215→   215→
+   216→   216→### H5. Public search endpoint has no `take` limit and no input length cap
+   217→   217→- **File**: `src/app/api/search/route.ts`
+   218→   218→- **Problem**: `q.length < 2` is the only guard. The query is built with `contains` (case-insensitive on SQLite), and each `findMany` has `take: 5` (good), but the endpoint accepts arbitrarily long query strings and `parseJsonArray(null)` on line 59 is dead code (always returns `[]`).
+   219→   219→- **Impact**: Minor — DoS via 100 KB query strings passed to SQLite LIKE; dead code confusion.
+   220→   220→- **Fix**: Cap `q.length > 100` and return 400; remove the dead `parseJsonArray(null)` call.
+   221→   221→
+   222→   222→### H6. `crud-factory.ts` uses `args?: any` for Prisma delegates
+   223→   223→- **File**: `src/lib/crud-factory.ts:13,33,96-98`
+   224→   224→- **Problem**: The Prisma-delegate types are hand-rolled with `any` to dodge Prisma's complex generic delegate types. This loses type-safety on `findMany`, `create`, `update`, `delete` arguments and return types.
+   225→   225→- **Fix**: Use Prisma's built-in delegate types — `Prisma.ProjectDelegate`, `Prisma.ServiceDelegate`, etc. — or generic `Prisma.ModelDelegate<T>` via `db[Model]`. This is the single biggest type-safety win in the codebase.
+   226→   226→
+   227→   227→### H7. `ReactMarkdown` renders user-controlled content without URL sanitization
+   228→   228→- **File**: `src/components/views/news-view.tsx:368`
+   229→   229→- **Problem**: Blog post `content` (markdown authored by admins) is rendered with `<ReactMarkdown components={markdownHeadingComponents}>`. By default `react-markdown` does NOT render raw HTML (no `rehype-raw`), so XSS via inline HTML is blocked. **However**, there is no `remark-gfm` URL sanitization and no `allowedSchemes` filter — a markdown link like `[click](javascript:alert(1))` would be rendered as `<a href="javascript:alert(1)">`. (Recent `react-markdown` versions DO filter `javascript:` URLs, but it's worth being explicit.)
+   230→   230→- **Fix**: Add explicit URL sanitization:
+   231→   231→  ```ts
+   232→   232→  <ReactMarkdown
+   233→   233→    components={markdownHeadingComponents}
+   234→   234→    urlTransform={(url) => /^https?:/i.test(url) || url.startsWith("#") ? url : ""}
+   235→   235→  >
+   236→   236→  ```
+   237→   237→
+   238→   238→### H8. `useSiteData` refetches on every mount; no SSR / no initial data
+   239→   239→- **File**: `src/lib/hooks/use-queries.ts:32-38`
+   240→   240→- **Problem**: `staleTime: 5 * 60 * 1000` is OK, but every component mounting calls `useSiteData()` — there's no `initialData` and no SSR. The home view shows skeletons for ~500 ms on every cold load. Combined with the fact that all views are client components, this defeats Next.js's RSC data-fetching.
+   241→   241→- **Fix**: Convert the home view (at minimum) to a Server Component that fetches site data with `fetch()` + `next: { revalidate: 300 }` and passes it as props. Hydrate the React Query cache via `<HydrationBoundary state={dehydrate(queryClient)}>`. See Architecture Recommendations §B.
+   242→   242→
+   243→   243→### H9. Public API routes have no `Cache-Control` / `revalidate` headers
+   244→   244→- **Files**: `src/app/api/public/site/route.ts`, `src/app/api/public/projects/route.ts`, `src/app/api/public/blog/route.ts`, etc.
+   245→   245→- **Problem**: Every public GET endpoint hits the database on every request. Next.js does not cache route handlers by default.
+   246→   246→- **Fix**: Either:
+   247→   247→  - Add `export const revalidate = 300;` to each route (Full Route Cache), OR
+   248→   248→  - Wrap responses with `NR.json(data, { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=86400" } })`.
+   249→   249→
+   250→   250→### H10. Resume download in admin uses raw `<a href>` on a data URL
+   251→   251→- **File**: `src/components/admin/panels/applications.tsx:285`
+   252→   252→- **Problem**: `<a href={app.resumeUrl as string} download>` where `resumeUrl` is a base64 data URL. This works for small PDFs but:
+   253→   253→  - Bloated URLs (multi-MB base64 strings) freeze the browser tab.
+   254→   254→  - No content-type sniffing.
+   255→   255→  - Vulnerable to stored XSS if a `data:text/html` payload sneaks through (see C4).
+   256→   256→- **Fix**: After implementing C4 (object storage), link to a streaming download endpoint `/api/admin/applications/[id]/resume` that sets `Content-Disposition: attachment` and streams the file.
+   257→   257→
+   258→   258→### H11. Single-route Zustand architecture is a major SEO/a11y/UX regression
+   259→   259→- **Files**: `src/lib/store.ts`, `src/components/site/view-router.tsx`, `src/app/page.tsx`, `src/app/sitemap.ts`
+   260→   260→- **Problem**: The entire site is one `/` route. "Navigation" calls `setView()` which mutates Zustand state — the URL **never changes**. Consequences:
+   261→   261→  - **No deep linking**: a user on `/about` who refreshes lands back on home.
+   262→   262→  - **No browser back/forward**: the browser history has only one entry. (Worklog claims smooth view transitions, but the user loses their place on back.)
+   263→   263→  - **SEO**: `sitemap.ts` lists 12 views but they all map to the same URL (`https://mhaksa.com`). Google sees one page. The "priorities" in the sitemap are useless.
+   264→   264→  - **Analytics**: cannot tell which "page" a visitor is on without custom events.
+   265→   265→  - **Sharing**: cannot share a link to a specific project, blog post, or job.
+   266→   266→  - **Accessibility**: screen readers cannot use `aria-current="page"` properly; the document title never changes.
+   267→   267→  - **Code splitting**: ViewRouter lazy-loads views, but without URL routing there's no `next/link` prefetching.
+   268→   268→- **Impact**: Severe — defeats the entire purpose of using Next.js App Router.
+   269→   269→- **Recommendation**: Implement proper multi-route App Router architecture. See "Architecture Recommendations §A" below.
+   270→   270→
+   271→   271→---
+   272→   272→
+   273→   273→## Medium Priority Issues
+   274→   274→
+   275→   275→### M1. No `loading.tsx` for the root segment → no streaming SSR
+   276→   276→- **Files**: missing — `src/app/loading.tsx`
+   277→   277→- **Fix**: Add a branded skeleton loader.
+   278→   278→
+   279→   279→### M2. `manifest.json` lives in `/public` instead of using `src/app/manifest.ts`
+   280→   280→- **Files**: `public/manifest.json`, `src/app/layout.tsx:120`
+   281→   281→- **Problem**: Next.js 13+ supports `app/manifest.ts` for type-safe, dynamic manifest generation. The current setup duplicates the brand colors in two places (`manifest.json` and `layout.tsx:81`).
+   282→   282→- **Fix**: Migrate to `src/app/manifest.ts`.
+   283→   283→
+   284→   284→### M3. `robots.txt` is a static file, not `src/app/robots.ts`
+   285→   285→- **Files**: `public/robots.txt`
+   286→   286→- **Problem**: Same as M2 — Next.js supports `app/robots.ts` for type-safe, dynamic generation. Also, the current `robots.txt` doesn't reference the Arabic locale.
+   287→   287→- **Fix**: Migrate to `src/app/robots.ts` and include `Host: https://mhaksa.com`.
+   288→   288→
+   289→   289→### M4. No `hreflang` alternate URLs for EN/AR
+   290→   290→- **File**: `src/app/layout.tsx:75`
+   291→   291→- **Problem**: `alternates.languages` is set to `{ "en-US": "/", "ar-SA": "/?lang=ar" }`, but the `?lang=ar` query param is not actually consumed by any middleware or layout — it does nothing. The `RtlRoot` component reads locale from Zustand's persisted state, not from the URL.
+   292→   292→- **Fix**: Either implement proper routing (Architecture §A) or at minimum parse `?lang=` in middleware and set the initial Zustand state.
+   293→   293→
+   294→   294→### M5. JSON-LD schema is incomplete
+   295→   295→- **File**: `src/app/layout.tsx:91-115`
+   296→   296→- **Problem**: Only an `Organization` schema is emitted. Missing:
+   297→   297→  - `WebSite` schema (enables sitelinks search box)
+   298→   298→  - `BreadcrumbList` for blog posts and projects
+   299→   299→  - `JobPosting` for each open job (Google for Jobs)
+   300→   300→  - `FAQPage` for the FAQ view
+   301→   301→  - `Article` for blog posts
+   302→   302→- **Fix**: Add per-view JSON-LD via a `<script>` tag in each view's server component.
+   303→   303→
+   304→   304→### M6. `next/font` loaded but Tailwind theme doesn't reference the CSS variables in `tailwind.config.ts`
+   305→   305→- **File**: `src/app/layout.tsx:7-18`, `tailwind.config.ts`
+   306→   306→- **Problem**: `Inter` and `Poppins` are loaded with `variable: "--font-inter"` / `--font-poppins`, applied to `<body>` via the className. Need to confirm `tailwind.config.ts` extends the `fontFamily` theme with these variables. (Likely already done — verify.)
+   307→   307→
+   308→   308→### M7. `<Card onClick=...>` without `role="button"` / `tabIndex` / keyboard handler
+   309→   309→- **Files**: `src/components/site/cards.tsx:34,95,230`
+   310→   310→- **Problem**: Three Card components are clickable via `onClick` but lack:
+   311→   311→  - `role="button"`
+   312→   312→  - `tabIndex={0}`
+   313→   313→  - `onKeyDown` handler for Enter/Space
+   314→   314→  - Visual focus ring
+   315→   315→- **Impact**: Keyboard users cannot navigate cards; screen readers don't announce them as interactive.
+   316→   316→- **Fix**: Either wrap card content in a real `<button>` (preferred for a11y) or add the ARIA attributes + keyboard handler.
+   317→   317→
+   318→   318→### M8. `react-hooks/exhaustive-deps` is disabled — likely stale closures
+   319→   319→- **File**: `eslint.config.mjs:21`
+   320→   320→- **Problem**: With the rule disabled, several `useEffect` calls are likely missing dependencies. Quick spot-check of `src/components/views/home-view.tsx:56` (hero auto-advance) and `587` (stat counter) shows effects with no deps array at all or partial deps.
+   321→   321→- **Fix**: Re-enable the rule and fix every warning.
+   322→   322→
+   323→   323→### M9. `useEffect` count is high (32 across components) — potential over-rendering
+   324→   324→- **File**: multiple
+   325→   325→- **Problem**: 32 `useEffect` calls across `src/components/` suggests some are doing work that could be done in event handlers or derived state. Each unnecessary effect causes an extra render cycle.
+   326→   326→- **Fix**: Audit each `useEffect` — many can be replaced with `useMemo`, event handlers, or moved to Server Components.
+   327→   327→
+   328→   328→### M10. No structured error response format on API errors
+   329→   329→- **Files**: `src/lib/api.ts:17-19` (`fail()`), various route handlers
+   330→   330→- **Problem**: Error responses return `{ success: false, error: "string" }`. There's no error code, no field-level errors for form validation, no request ID for debugging. The contact form joins Zod issues with `;` and returns them as a single string — the client cannot programmatically map errors back to fields.
+   331→   331→- **Fix**: Extend `ApiResponse`:
+   332→   332→  ```ts
+   333→   333→  interface ApiError { code: string; message: string; field?: string; }
+   334→   334→  interface ApiResponse<T> { success: boolean; data?: T; error?: string; errors?: ApiError[]; requestId?: string; }
+   335→   335→  ```
+   336→   336→  Have `fail()` accept either a string or an array of `ApiError`. Update Zod parsing to emit `errors: issues.map(i => ({ code: "VALIDATION", field: i.path.join("."), message: i.message }))`.
+   337→   337→
+   338→   338→### M11. `ActivityLog.userId` relation uses `SetNull` on delete — orphaned audit trail
+   339→   339→- **File**: `prisma/schema.prisma:45`
+   340→   340→- **Problem**: When a User is deleted, their activity logs have `userId` set to NULL. This is reasonable for audit-trail preservation, but the log entries lose attribution. Better to keep the user's email/name snapshot in the log itself.
+   341→   341→- **Fix**: Add `userEmail String?` and `userName String?` to `ActivityLog` and snapshot them at log time.
+   342→   342→
+   343→   343→### M12. `BlogPost.views` increment is fire-and-forget with no concurrency control
+   344→   344→- **File**: `src/app/api/public/blog/route.ts:24`
+   345→   345→- **Problem**: `db.blogPost.update({ data: { views: { increment: 1 } } }).catch(() => {})` — swallowed errors, no debouncing (refresh = +1), no unique-user tracking. Stats are inflated and unreliable.
+   346→   346→- **Fix**: Track views via a separate `BlogView` table with `(postId, ip, day)` unique constraint, or use a counter service (Redis INCR) with a 24-hour per-IP dedupe.
+   347→   347→
+   348→   348→### M13. No environment variable validation at boot
+   349→   349→- **File**: missing — should be `src/lib/env.ts`
+   350→   350→- **Problem**: No `z.object({ ... }).parse(process.env)` at app startup. Missing env vars fail silently at runtime (e.g., the NextAuth secret fallback in C2).
+   351→   351→- **Fix**: Create `src/lib/env.ts` with Zod-validated env schema; call it once in `next.config.ts` and once in `src/lib/db.ts` / `src/lib/auth.ts`.
+   352→   352→
+   353→   353→### M14. `parseJsonArray` / `stringifyArray` boilerplate repeated across routes
+   354→   354→- **Files**: every public/admin route that touches `features`, `tags`, `galleryImages`, `requirements`
+   355→   355→- **Problem**: SQLite has no array type, so arrays are stored as JSON strings. Every read/write requires manual `parseJsonArray`/`stringifyArray`. This is error-prone (easy to forget one column).
+   356→   356→- **Fix**: Add Prisma `Json` type to these columns (`features Json?`, etc.) and Prisma will auto-serialize. Or write a thin mapper utility per model.
+   357→   357→
+   358→   358→---
+   359→   359→
+   360→   360→## Low Priority Issues
+   361→   361→
+   362→   362→### L1. `next-env.d.ts` is committed
+   363→   363→- **File**: `next-env.d.ts`
+   364→   364→- **Problem**: Auto-generated by Next.js; should be gitignored (it already is in `.gitignore`).
+   365→   365→- **Fix**: `git rm --cached next-env.d.ts` (no behavior change).
+   366→   366→
+   367→   367→### L2. `dev.log` and `server.log` are committed and growing
+   368→   368→- **Files**: `dev.log`, `.gitignore:39-40`
+   369→   369→- **Problem**: `dev.log` is gitignored but exists in the working tree (507 bytes, contains a `[next-auth][warn][NEXTAUTH_URL]` warning that confirms C2).
+   370→   370→- **Fix**: No action needed for delivery; ensure `.gitignore` covers `server.log` (it does, line 41).
+   371→   371→
+   372→   372→### L3. `.env` is committed to the repo
+   373→   373→- **File**: `.env`
+   374→   374→- **Problem**: `.gitignore:32` says `.env*` is ignored, but `.env` exists in the working tree. Confirm it's not in git history.
+   375→   375→- **Fix**: `git log --all --full-history -- .env` — if it was ever committed, rotate `DATABASE_URL` and any other values.
+   376→   376→
+   377→   377→### L4. `tsconfig.json` `include` glob picks up `examples/` and `skills/`
+   378→   378→- **File**: `tsconfig.json:32-38`
+   379→   379→- **Problem**: The `include: ["**/*.ts", "**/*.tsx"]` glob picks up `examples/websocket/*.ts` and `skills/image-edit/scripts/*.ts` which fail compilation (missing `socket.io-client`, etc.). The ESLint config correctly ignores these (`eslint.config.mjs:47`), but `tsconfig.json` does not.
+   380→   380→- **Fix**: Add `"exclude": ["node_modules", "examples", "skills", ".next"]` to `tsconfig.json`.
+   381→   381→
+   382→   382→### L5. `package.json` has dependencies that are not used in `src/`
+   383→   383→- **Files**: `package.json:17-83`
+   384→   384→- **Problem**: A quick scan suggests `@dnd-kit/*`, `@mdxeditor/editor`, `react-syntax-highlighter`, `react-resizable-panels`, `react-day-picker`, `input-otp`, `recharts` (used in admin only), `next-intl` (i18n is custom, not next-intl), `z-ai-web-dev-sdk`, `uuid` may be unused or partially used.
+   385→   385→- **Fix**: Run `bunx depcheck` and remove unused deps to shrink bundle and attack surface.
+   386→   386→
+   387→   387→### L6. Hero section auto-advance uses `useEffect` with no pause-on-hover
+   388→   388→- **File**: `src/components/views/home-view.tsx:56-XX` (verify)
+   389→   389→- **Problem**: Carousel auto-advances every N seconds with no pause when the user hovers or when the tab is hidden.
+   390→   390→- **Fix**: Add `onMouseEnter`/`onMouseLeave` handlers and a `document.hidden` check.
+   391→   391→
+   392→   392→### L7. `manifest.json` references `/hero-industrial.png` (214 KB) as the icon
+   393→   393→- **File**: `public/manifest.json:11`
+   394→   394→- **Problem**: Using a 214 KB hero image as a PWA icon is wasteful and slow on mobile install. PWA icons should be optimized PNGs at 192×192 and 512×512.
+   395→   395→- **Fix**: Generate proper icons via `sharp` or an icon generator; reference them in `manifest.json`.
+   396→   396→
+   397→   397→### L8. No `<html lang>` set server-side
+   398→   398→- **File**: `src/app/layout.tsx:118`
+   399→   399→- **Problem**: `<html lang="en" suppressHydrationWarning>` is hardcoded. `RtlRoot` updates it client-side via `document.documentElement.lang = locale`, but the initial server render is always `en` — Arabic visitors see a flash of English before hydration.
+   400→   400→- **Fix**: Read locale from cookie in `layout.tsx` (Server Component) and set `lang`/`dir` on `<html>` server-side.
+   401→   401→
+   402→   402→### L9. `activity/route.ts` returns `include: { user: true }` — leaks `passwordHash`
+   403→   403→- **File**: `src/app/api/admin/activity/route.ts:16`
+   404→   404→- **Problem**: `include: { user: true }` returns the full `User` row including `passwordHash`, `email`, etc. The admin activity log viewer only displays `user.name`, but the JSON response includes the hash.
+   405→   405→- **Fix**: Use `select: { user: { select: { name: true } } }` instead of `include`.
+   406→   406→
+   407→   407→---
+   408→   408→
+   409→   409→## Architecture Recommendations
+   410→   410→
+   411→   411→### §A. Migrate from Zustand view-state to proper Next.js App Router routing
+   412→   412→
+   413→   413→**Current state**: Single `/` route, Zustand holds `view: "home" | "about" | ...`, navigation calls `setView()`, URL never changes.
+   414→   414→
+   415→   415→**Recommendation**: This is the single most impactful architectural change. The "user can only see the `/` route" sandbox constraint noted in the worklog appears to be a **sandbox restriction, not a product requirement**. For a production corporate website, proper URL routing is non-negotiable for the reasons listed in H11.
+   416→   416→
+   417→   417→**Proposed route structure**:
+   418→   418→```
+   419→   419→src/app/
+   420→   420→├── layout.tsx                    # Root layout (server component)
+   421→   421→├── page.tsx                      # Home (/)
+   422→   422→├── about/page.tsx                # /about
+   423→   423→├── services/
+   424→   424→│   ├── page.tsx                  # /services
+   425→   425→│   └── [slug]/page.tsx           # /services/[slug]   (generateStaticParams)
+   426→   426→├── projects/
+   427→   427→│   ├── page.tsx                  # /projects
+   428→   428→│   └── [slug]/page.tsx           # /projects/[slug]   (generateStaticParams)
+   429→   429→├── gallery/page.tsx              # /gallery
+   430→   430→├── clients/page.tsx              # /clients
+   431→   431→├── careers/
+   432→   432→│   ├── page.tsx                  # /careers
+   433→   433→│   └── [slug]/page.tsx           # /careers/[slug]   (generateStaticParams)
+   434→   434→├── news/
+   435→   435→│   ├── page.tsx                  # /news
+   436→   436→│   └── [slug]/page.tsx           # /news/[slug]   (generateStaticParams)
+   437→   437→├── faq/page.tsx                  # /faq
+   438→   438→├── contact/page.tsx              # /contact
+   439→   439→├── legal/
+   440→   440→│   ├── privacy/page.tsx          # /legal/privacy
+   441→   441→│   └── terms/page.tsx            # /legal/terms
+   442→   442→├── admin/
+   443→   443→│   ├── layout.tsx                # Auth-gated admin layout (server)
+   444→   444→│   └── page.tsx                  # /admin dashboard
+   445→   445→└── api/...
+   446→   446→```
+   447→   447→
+   448→   448→**Migration approach** (low-risk, incremental):
+   449→   449→1. **Phase 1** — Keep Zustand as a *secondary* navigation hint; add a `useEffect` in `RtlRoot` that syncs `window.location.pathname` → Zustand `view` on back/forward (popstate). Add `history.pushState` on `setView`. This restores back-button without rewriting anything.
+   450→   450→2. **Phase 2** — Create new App Router pages that render the same view components (e.g., `app/about/page.tsx` → `<AboutView />`). Both the Zustand-driven `/` and the new `/about` work.
+   451→   451→3. **Phase 3** — Convert navigation `setView("about")` calls to `<Link href="/about">`. Update `Header`/`Footer` nav.
+   452→   452→4. **Phase 4** — Move data fetching into Server Components; use `generateStaticParams` for `[slug]` routes; remove TanStack Query for public read-only data (keep it for admin).
+   453→   453→5. **Phase 5** — Add `[locale]` segment for proper `/en/...` and `/ar/...` bilingual routing using `next-intl` (already installed but unused).
+   454→   454→
+   455→   455→**Effort estimate**: 3–5 days for a senior engineer.
+   456→   456→
+   457→   457→### §B. Adopt Server Components for public pages
+   458→   458→
+   459→   459→Currently **every** view component is `"use client"`. This means:
+   460→   460→- No SSR data fetching — every page shows a skeleton for ~500 ms.
+   461→   461→- No SEO benefits from server-rendered content.
+   462→   462→- Larger JS bundle (TanStack Query, all view code ships to the client).
+   463→   463→
+   464→   464→**Recommendation**: Convert public views to Server Components that fetch via Prisma directly (server-side) and pass typed props to client sub-components. Keep client components only where interactivity is required (forms, carousels, animations).
+   465→   465→
+   466→   466→### §C. Replace `crud-factory.ts`'s `any` with proper Prisma types
+   467→   467→
+   468→   468→Use Prisma's generated delegate types (`Prisma.ServiceDelegate`, etc.) or a generic helper that preserves type inference. This eliminates 5+ `as any`/`as Record<string, unknown>` casts per route file.
+   469→   469→
+   470→   470→### §D. Adopt a transactional outbox for activity logging
+   471→   471→
+   472→   472→Currently `logActivity` is fire-and-forget with `catch(() => {})`. If the DB write fails (e.g., DB down, constraint violation), the audit trail is silently lost. For an enterprise audit trail, use a transactional outbox pattern or at minimum log failures to a fallback sink (stderr + Sentry).
+   473→   473→
+   474→   474→### §E. Add observability: Sentry + structured logging
+   475→   475→
+   476→   476→There is currently no error monitoring, no structured logging, no request tracing. For a production enterprise app, add:
+   477→   477→- `@sentry/nextjs` for error tracking.
+   478→   478→- `pino` or `winston` for structured server logs.
+   479→   479→- A `requestId` propagated via `X-Request-ID` header for tracing.
+   480→   480→
+   481→   481→### §F. Replace SQLite with PostgreSQL for production
+   482→   482→
+   483→   483→SQLite is fine for development but problematic for production multi-process deployments (file locking, no concurrent writes). The Prisma schema is DB-agnostic — switching to Postgres is a `provider = "postgresql"` change + a `DATABASE_URL` swap. This also enables `Json` column types (fixes M14), proper full-text search (better than SQLite `contains`), and native UUID.
+   484→   484→
+   485→   485→---
+   486→   486→
+   487→   487→## Files to Create/Modify Summary
+   488→   488→
+   489→   489→### Batch 1 — Critical Build & Config (1 subagent, ~4h)
+   490→   490→- [ ] `next.config.ts` — set `ignoreBuildErrors: false`, `reactStrictMode: true`, add `eslint.ignoreDuringBuilds: false`.
+   491→   491→- [ ] `tsconfig.json` — add `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noFallthroughCasesInSwitch`, `forceConsistentCasingInFileNames`, `exactOptionalPropertyTypes`; add `examples`/`skills` to `exclude`.
+   492→   492→- [ ] `eslint.config.mjs` — remove ALL rule overrides; keep only `ignores`.
+   493→   493→- [ ] `.env` — add `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `NODE_ENV`.
+   494→   494→- [ ] `.env.example` — new file documenting all required vars.
+   495→   495→- [ ] `src/lib/env.ts` — new file with Zod-validated env schema.
+   496→   496→- [ ] `src/lib/auth.ts` — remove secret fallback (C2).
+   497→   497→- [ ] `prisma/seed.ts` — remove hardcoded password; generate random; log once.
+   498→   498→
+   499→   499→### Batch 2 — TypeScript Error Fixes (1 subagent, ~6h)
+   500→   500→Must resolve all 23 `tsc --noEmit` errors in `src/`. Specifically:
+   501→   501→- [ ] `src/components/views/home-view.tsx:708` — add `pick` to `useLocale()` destructure in `CTASection`.
+   502→   502→- [ ] `src/components/views/home-view.tsx:145` — add `ctaTextAr` to `HeroSlideDTO` (see Batch 3).
+   503→   503→- [ ] `src/components/admin/charts/index.tsx:275,323` — wrap `fetchStats` in arrow function: `queryFn: () => fetchStats(30)`.
+   504→   504→- [ ] `src/components/admin/charts/index.tsx:287,335` — narrow `data` type after the `isLoading` guard.
+   505→   505→- [ ] `src/components/admin/admin-dashboard.tsx:135-136` — widen `ResourceKey` or replace `settings`/`activity` tabs with dedicated components.
+   506→   506→- [ ] `src/components/admin/resource-manager.tsx:102,105,145,157,487` — fix `ResourceKey` type; fix `unknown → ReactNode` casts.
+   507→   507→- [ ] `src/components/admin/panels/applications.tsx:262,275` — `unknown → ReactNode` casts.
+   508→   508→- [ ] `src/components/admin/panels/leads.tsx:279,284` — same.
+   509→   509→- [ ] `src/components/admin/panels/newsletter.tsx:114` — same.
+   510→   510→- [ ] `src/components/site/smart-image.tsx:8` — `ImgProps` is not exported by `react`; import only `ImgHTMLAttributes` or remove the re-export.
+   511→   511→
+   512→   512→### Batch 3 — Security Fixes (1 subagent, ~6h)
+   513→   513→- [ ] `src/components/admin/admin-overlay.tsx:108,193-197` — remove hardcoded credentials (C3).
+   514→   514→- [ ] `src/app/api/careers/apply/route.ts` — add MIME whitelist, 5 MB size limit, magic-byte check, store to disk/object storage (C4).
+   515→   515→- [ ] `src/lib/rate-limit.ts` — move to Redis-backed store (C8).
+   516→   516→- [ ] `src/middleware.ts` — new file: admin route guard + login rate limit + CSRF check (C7).
+   517→   517→- [ ] `src/app/api/admin/activity/route.ts:16` — use `select` not `include` (L9).
+   518→   518→- [ ] `src/components/views/news-view.tsx:368` — add `urlTransform` to ReactMarkdown (H7).
+   519→   519→
+   520→   520→### Batch 4 — App Router Conventions (1 subagent, ~4h)
+   521→   521→- [ ] `src/app/error.tsx` — new client error boundary.
+   522→   522→- [ ] `src/app/global-error.tsx` — new global error boundary.
+   523→   523→- [ ] `src/app/loading.tsx` — new loading skeleton.
+   524→   524→- [ ] `src/app/manifest.ts` — migrate from `public/manifest.json` (M2).
+   525→   525→- [ ] `src/app/robots.ts` — migrate from `public/robots.txt` (M3).
+   526→   526→- [ ] `src/app/layout.tsx` — add `WebSite` JSON-LD; read locale from cookie server-side (L8).
+   527→   527→- [ ] `prisma/schema.prisma` — add `mustChangePassword Boolean @default(false)` to `User`.
+   528→   528→
+   529→   529→### Batch 5 — DTO / Validation / Pagination (1 subagent, ~4h)
+   530→   530→- [ ] `src/lib/types.ts` — add `ctaTextAr` to `HeroSlideDTO` (H3); add `errors?: ApiError[]` to `ApiResponse` (M10).
+   531→   531→- [ ] `src/lib/validations.ts` — add `ctaTextAr` to `heroSlideSchema` (H3).
+   532→   532→- [ ] `src/components/admin/resource-configs.ts` — add `ctaTextAr` to heroes config; widen `ResourceKey` or split (H2).
+   533→   533→- [ ] `src/lib/crud-factory.ts` — replace `any` with Prisma delegate types (H6); add pagination support (H4).
+   534→   534→- [ ] `src/lib/api.ts` — extend `fail()` to accept `ApiError[]` (M10).
+   535→   535→- [ ] `src/app/api/admin/leads/route.ts`, `applications/route.ts` — add `?page&pageSize` (H4).
+   536→   536→
+   537→   537→### Batch 6 — Accessibility & Performance (1 subagent, ~4h)
+   538→   538→- [ ] `src/components/site/cards.tsx:34,95,230` — wrap cards in `<button>` or add ARIA + keyboard (M7).
+   539→   539→- [ ] `src/components/views/home-view.tsx` — pause carousel on hover (L6).
+   540→   540→- [ ] `src/app/layout.tsx` — set `<html lang/dir>` server-side (L8).
+   541→   541→- [ ] Public API routes — add `export const revalidate = 300` (H9).
+   542→   542→- [ ] `src/lib/hooks/use-queries.ts:32-38` — pass `initialData` from server (H8).
+   543→   543→- [ ] Run `bunx depcheck` and remove unused deps (L5).
+   544→   544→
+   545→   545→### Batch 7 — Architecture Migration (1 senior subagent, 3–5 days) — OPTIONAL but RECOMMENDED
+   546→   546→- [ ] Implement proper App Router multi-route structure (§A).
+   547→   547→- [ ] Convert public views to Server Components (§B).
+   548→   548→- [ ] Add `generateStaticParams` for `[slug]` routes.
+   549→   549→- [ ] Migrate i18n to `next-intl` with `[locale]` segment.
+   550→   550→- [ ] Replace `<img>` raw tags (only 1 in `resource-manager.tsx:147`) with `<Image>`.
+   551→   551→- [ ] Add per-view JSON-LD schemas (M5).
+   552→   552→
+   553→   553→---
+   554→   554→
+   555→   555→## Verification Steps After All Fixes
+   556→   556→
+   557→   557→1. `bunx tsc --noEmit` → 0 errors.
+   558→   558→2. `bun run lint` → 0 errors, 0 warnings.
+   559→   559→3. `bun run build` → succeeds with `ignoreBuildErrors: false`.
+   560→   560→4. `curl -s https://mhaksa.com/api/admin/services` → 401 (no session).
+   561→   561→5. `curl -s -X POST https://mhaksa.com/api/careers/apply -F "resume=@evil.svg"` → 415 or 422.
+   562→   562→6. Open admin overlay → no pre-filled email, no "Demo Credentials" panel.
+   563→   563→7. Refresh on `/about` (after §A migration) → stays on `/about`.
+   564→   564→8. View page source → server-rendered content visible (after §B migration).
+   565→   565→9. Lighthouse audit → Performance ≥ 90, Accessibility ≥ 95, SEO ≥ 95, Best Practices ≥ 95.
+   566→   566→10. Run `bunx depcheck` → no unused deps.
+   567→   567→
