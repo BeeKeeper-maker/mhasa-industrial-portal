@@ -17,6 +17,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ReadingProgress } from "@/components/site/reading-progress";
+import { BlogToc, markdownHeadingComponents } from "@/components/site/blog-toc";
+import { BlogGridSkeleton } from "@/components/site/skeletons";
 import {
   SectionHeading, FadeIn, GoldDivider,
 } from "@/components/site/primitives";
@@ -94,11 +96,7 @@ function NewsList() {
 
           {/* Grid */}
           {allLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="aspect-[16/10] rounded-2xl bg-muted/40 animate-pulse" />
-              ))}
-            </div>
+            <BlogGridSkeleton count={6} />
           ) : posts.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-muted-foreground">{t.common.noResults}</p>
@@ -343,26 +341,33 @@ function PostDetail({ slug }: { slug: string }) {
       {/* Article body */}
       <section className="section-pad bg-background">
         <div className="container mx-auto px-6">
-          <div className="mx-auto max-w-3xl">
-            <FadeIn>
-              <article
-                className="prose-content text-foreground/90 leading-relaxed
-                  [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:font-display [&_h1]:mt-8 [&_h1]:mb-4
-                  [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:font-display [&_h2]:mt-6 [&_h2]:mb-3 [&_h2]:text-foreground
-                  [&_h3]:text-xl [&_h3]:font-bold [&_h3]:mt-5 [&_h3]:mb-2 [&_h3]:text-foreground
-                  [&_p]:mb-4 [&_p]:text-muted-foreground [&_p]:leading-relaxed
-                  [&_ul]:list-disc [&_ul]:ps-6 [&_ul]:mb-4 [&_ul]:space-y-2 [&_ul]:text-muted-foreground
-                  [&_ol]:list-decimal [&_ol]:ps-6 [&_ol]:mb-4 [&_ol]:space-y-2 [&_ol]:text-muted-foreground
-                  [&_li]:leading-relaxed
-                  [&_blockquote]:border-s-4 [&_blockquote]:border-gold [&_blockquote]:ps-4 [&_blockquote]:py-2 [&_blockquote]:my-6 [&_blockquote]:bg-muted/30 [&_blockquote]:rounded-e-lg [&_blockquote]:text-foreground [&_blockquote]:italic
-                  [&_a]:text-primary [&_a]:font-medium [&_a]:underline [&_a]:hover:text-gold
-                  [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono
-                  [&_pre]:bg-navy [&_pre]:text-white [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:my-4
-                  [&_img]:rounded-lg [&_img]:my-4"
-              >
-                <ReactMarkdown>{content}</ReactMarkdown>
-              </article>
-            </FadeIn>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+            {/* TOC sidebar (desktop only) */}
+            <div className="hidden lg:block lg:col-span-3">
+              <BlogToc content={content} />
+            </div>
+
+            {/* Article content */}
+            <div className="lg:col-span-9">
+              <FadeIn>
+                <article
+                  className="prose-content text-foreground/90 leading-relaxed
+                    [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:font-display [&_h1]:mt-8 [&_h1]:mb-4
+                    [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:font-display [&_h2]:mt-6 [&_h2]:mb-3 [&_h2]:text-foreground
+                    [&_h3]:text-xl [&_h3]:font-bold [&_h3]:mt-5 [&_h3]:mb-2 [&_h3]:text-foreground
+                    [&_p]:mb-4 [&_p]:text-muted-foreground [&_p]:leading-relaxed
+                    [&_ul]:list-disc [&_ul]:ps-6 [&_ul]:mb-4 [&_ul]:space-y-2 [&_ul]:text-muted-foreground
+                    [&_ol]:list-decimal [&_ol]:ps-6 [&_ol]:mb-4 [&_ol]:space-y-2 [&_ol]:text-muted-foreground
+                    [&_li]:leading-relaxed
+                    [&_blockquote]:border-s-4 [&_blockquote]:border-gold [&_blockquote]:ps-4 [&_blockquote]:py-2 [&_blockquote]:my-6 [&_blockquote]:bg-muted/30 [&_blockquote]:rounded-e-lg [&_blockquote]:text-foreground [&_blockquote]:italic
+                    [&_a]:text-primary [&_a]:font-medium [&_a]:underline [&_a]:hover:text-gold
+                    [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono
+                    [&_pre]:bg-navy [&_pre]:text-white [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:my-4
+                    [&_img]:rounded-lg [&_img]:my-4"
+                >
+                  <ReactMarkdown components={markdownHeadingComponents}>{content}</ReactMarkdown>
+                </article>
+              </FadeIn>
 
             {/* Tags */}
             {post.tags.length > 0 && (
@@ -389,6 +394,7 @@ function PostDetail({ slug }: { slug: string }) {
                 {locale === "ar" ? "كل الأخبار" : "Back to All News"}
               </Button>
             </FadeIn>
+            </div>
           </div>
         </div>
       </section>

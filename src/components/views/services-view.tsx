@@ -19,6 +19,7 @@ import {
 } from "@/components/site/primitives";
 import { ServiceCard, ProjectCard } from "@/components/site/cards";
 import { ServiceComparisonTable } from "@/components/site/service-comparison-table";
+import { ServiceGridSkeleton } from "@/components/site/skeletons";
 import { Icon } from "@/components/site/icon";
 import { useServices, useService } from "@/lib/hooks/use-queries";
 import { useAppStore } from "@/lib/store";
@@ -59,11 +60,7 @@ function ServicesList() {
       <section className="section-pad bg-background">
         <div className="container mx-auto px-6">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-64 rounded-2xl bg-muted/40 animate-pulse" />
-              ))}
-            </div>
+            <ServiceGridSkeleton count={6} />
           ) : list.length === 0 ? null : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {list.map((svc, i) => (

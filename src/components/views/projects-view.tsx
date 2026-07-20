@@ -27,6 +27,7 @@ import {
 } from "@/components/site/primitives";
 import { ProjectCard } from "@/components/site/cards";
 import { BeforeAfterSlider } from "@/components/site/before-after-slider";
+import { ProjectGridSkeleton } from "@/components/site/skeletons";
 import { Icon } from "@/components/site/icon";
 import { useProjects, useProject } from "@/lib/hooks/use-queries";
 import { useAppStore } from "@/lib/store";
@@ -179,11 +180,7 @@ function ProjectsList() {
 
           {/* Grid */}
           {allLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="aspect-[4/3] rounded-2xl bg-muted/40 animate-pulse" />
-              ))}
-            </div>
+            <ProjectGridSkeleton count={6} />
           ) : projects.length === 0 ? (
             <div className="text-center py-20">
               <Search className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />

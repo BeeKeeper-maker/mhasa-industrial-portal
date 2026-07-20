@@ -5,13 +5,16 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Phone, Users, Building2, FileText, TrendingUp, ArrowUpRight, Mail } from "lucide-react";
+import { useState } from "react";
+import { Phone, Users, Building2, FileText, TrendingUp, ArrowUpRight, Mail, Calendar } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   LeadsOverTimeChart, ApplicationsByStatusChart, LeadsByStatusChart,
   ContentCountsGrid, TopCategoriesChart,
 } from "@/components/admin/charts";
+import { cn } from "@/lib/utils";
 
 async function fetchAdmin(url: string) {
   const res = await fetch(url);
@@ -19,7 +22,14 @@ async function fetchAdmin(url: string) {
   return json.success ? json.data : null;
 }
 
+const DATE_RANGES = [
+  { days: 7, label: "7D" },
+  { days: 30, label: "30D" },
+  { days: 90, label: "90D" },
+];
+
 export function AdminOverview() {
+  const [days, setDays] = useState(30);
   const { data: leads } = useQuery({ queryKey: ["admin-leads"], queryFn: () => fetchAdmin("/api/admin/leads") });
   const { data: applications } = useQuery({ queryKey: ["admin-applications"], queryFn: () => fetchAdmin("/api/admin/applications") });
   const { data: services } = useQuery({ queryKey: ["admin-services"], queryFn: () => fetchAdmin("/api/admin/services") });
@@ -40,9 +50,29 @@ export function AdminOverview() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard Overview</h1>
-        <p className="text-sm text-muted-foreground mt-1">Welcome back. Here's what's happening with your site.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Dashboard Overview</h1>
+          <p className="text-sm text-muted-foreground mt-1">Welcome back. Here's what's happening with your site.</p>
+        </div>
+        {/* Date range selector */}
+        <div className="flex items-center gap-1.5 rounded-lg border border-border bg-card p-1">
+          <Calendar className="h-3.5 w-3.5 text-muted-foreground mx-1.5" />
+          {DATE_RANGES.map((r) => (
+            <button
+              key={r.days}
+              onClick={() => setDays(r.days)}
+              className={cn(
+                "rounded-md px-3 py-1 text-xs font-semibold transition-colors",
+                days === r.days
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -66,12 +96,12 @@ export function AdminOverview() {
 
       {/* Analytics Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <LeadsOverTimeChart />
-        <ApplicationsByStatusChart />
+        <LeadsOverTimeChart days={days} />
+        <ApplicationsByStatusChart days={days} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <LeadsByStatusChart />
+        <LeadsByStatusChart days={days} />
         <TopCategoriesChart />
       </div>
 

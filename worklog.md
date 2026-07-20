@@ -578,3 +578,70 @@ Task: Add admin dashboard analytics charts, enhanced view transitions, search re
   9. Sitemap priority/frequency per view type
   10. PWA offline support with service worker
 - **Styling enhancements**: Card hover lift effects, gradient borders on featured items, skeleton loaders for all async content.
+
+---
+Task ID: 9 (Cron Review Round 5 — Date-Range Filter, Blog TOC, Skeletons)
+Agent: webDevReview cron (autonomous)
+Task: Add admin date-range filter for charts, blog post table of contents, skeleton loaders for async content
+
+## Current Project Status Assessment
+- **Stable**: All previous features working (dark mode, newsletter, quick-quote, project filters, testimonial carousel, 404, service comparison, reading progress, cookie preferences, print stylesheet, parallax, TOC scroll-spy, admin charts, view transitions, search highlighting, WhatsApp click-to-chat).
+- **Lint**: clean (0 errors, 0 warnings).
+- **Server**: Home HTTP 200, Site API 7 svc/3 hero, Blog API 3 posts, admin stats requires auth.
+- **Zero runtime errors** in dev.log.
+
+## Current Goals / Completed Modifications
+
+### Features Completed This Round
+
+1. **Admin Dashboard Date-Range Filter** (7/30/90 days)
+   - Updated `/api/admin/stats` API to accept `?days=7|30|90` query param (default 30).
+   - All time-based queries (leads, applications, status breakdowns) now respect the selected range.
+   - Content counts and top categories remain all-time (not date-filtered).
+   - Added date-range selector UI to admin overview header — 3 pill buttons (7D/30D/90D) with calendar icon, active state highlights.
+   - Updated all chart components (`LeadsOverTimeChart`, `ApplicationsByStatusChart`, `LeadsByStatusChart`) to accept `days` prop and pass to React Query key + fetch URL.
+   - Charts re-fetch automatically when range changes (React Query cache invalidation via key).
+
+2. **Blog Post Table of Contents** (sticky sidebar)
+   - Created `BlogToc` component — parses ## and ### headings from markdown, generates URL-safe IDs.
+   - Sticky sidebar on desktop (lg:col-span-3), scroll-spy highlights active section with gold chevron + number badge.
+   - Only renders for posts with 3+ headings (avoids clutter on short posts).
+   - Smooth scroll on click, URL hash updates without jump.
+   - Created `markdownHeadingComponents` — custom h2/h3 renderers that inject IDs + `scroll-mt-24` for anchor offset.
+   - Updated blog detail layout to 12-column grid (TOC + content) on desktop.
+   - Bilingual label: "In This Article" / "محتويات المقال".
+
+3. **Skeleton Loaders** (shimmer placeholders)
+   - Created `src/components/site/skeletons.tsx` with 9 skeleton components:
+     - `ProjectCardSkeleton`, `ProjectGridSkeleton`
+     - `BlogCardSkeleton`, `BlogGridSkeleton`
+     - `ServiceCardSkeleton`, `ServiceGridSkeleton`
+     - `TeamCardSkeleton`, `GallerySkeleton`
+     - `ListSkeleton`, `SectionSkeleton`
+   - All use the existing `.shimmer` CSS animation class.
+   - Applied to: Projects view (replaced pulse divs), Services view (replaced pulse divs), News view (replaced pulse divs).
+   - Properly structured with image area + text lines matching real card layout.
+
+### Verification Results
+- `bun run lint` → **0 errors, 0 warnings** ✓
+- Home page: HTTP 200 ✓
+- Site API: 7 services, 3 heroes ✓
+- Blog API: 3 posts ✓
+- Admin stats API: correctly returns 401 without auth ✓
+- Zero runtime errors in dev.log ✓
+
+## Unresolved Issues / Risks / Next-Phase Recommendations
+- **Agent-browser QA**: Cannot reach localhost (sandbox isolation). QA via curl + dev.log.
+- **Blog TOC**: Only works for markdown content with ## or ### headings; existing seeded posts have minimal headings. Future blog posts should use proper markdown heading structure.
+- **Next-phase feature ideas** (priority order):
+  1. Google Analytics 4 + Meta Pixel conditional loading based on cookie preferences
+  2. Image blur-up placeholder (global Next/Image enhancement with dominant color)
+  3. Project comparison feature (select 2-3, compare side-by-side)
+  4. "Last updated" badge on all admin-edited content
+  5. Export leads/applications by date range (CSV with date filter)
+  6. Email notification on new lead (SMTP integration — placeholder in settings)
+  7. PWA offline support with service worker
+  8. Admin bulk actions (delete multiple, change status multiple)
+  9. Content versioning / draft preview for blog posts
+  10. Sitemap priority/frequency per view type
+- **Styling enhancements**: Card hover lift effects, gradient borders on featured items, skeleton→content fade transition.

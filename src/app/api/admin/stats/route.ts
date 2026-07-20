@@ -12,13 +12,17 @@ export async function GET(request: NextRequest) {
   const auth = await requireAdmin();
   if (isErrorResponse(auth)) return auth;
 
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now);
-  thirtyDaysAgo.setDate(now.getDate() - 30);
+  // Support date range filter: ?days=7|30|90 (default 30)
+  const daysParam = Number(new URL(request.url).searchParams.get("days"));
+  const days = [7, 30, 90].includes(daysParam) ? daysParam : 30;
 
-  // Leads over last 30 days (grouped by day)
+  const now = new Date();
+  const startDate = new Date(now);
+  startDate.setDate(now.getDate() - days);
+
+  // Leads over the selected period (grouped by day)
   const leads = await db.contactLead.findMany({
-    where: { createdAt: { gte: thirtyDaysAgo } },
+    where: { createdAt: { gte: startDate } },
     select: { id: true, status: true, createdAt: true, projectBudget: true },
   });
 
@@ -30,7 +34,7 @@ export async function GET(request: NextRequest) {
 
   // Fill missing days with 0
   const leadsTimeSeries: { date: string; count: number; label: string }[] = [];
-  for (let i = 29; i >= 0; i--) {
+  for (let i = days - 1; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(now.getDate() - i);
     const dayKey = d.toISOString().slice(0, 10);
@@ -41,15 +45,21 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // Applications by status
-  const applications = await db.jobApplication.findMany({ select: { status: true } });
+  // Applications by status (within range)
+  const applications = await db.jobApplication.findMany({
+    where: { createdAt: { gte: startDate } },
+    select: { status: true },
+  });
   const appsByStatus: Record<string, number> = {};
   applications.forEach((a) => {
     appsByStatus[a.status] = (appsByStatus[a.status] ?? 0) + 1;
   });
 
-  // Leads by status (for breakdown)
-  const allLeads = await db.contactLead.findMany({ select: { status: true } });
+  // Leads by status (within range)
+  const allLeads = await db.contactLead.findMany({
+    where: { createdAt: { gte: startDate } },
+    select: { status: true },
+  });
   const leadsByStatus: Record<string, number> = {};
   allLeads.forEach((l) => {
     leadsByStatus[l.status] = (leadsByStatus[l.status] ?? 0) + 1;

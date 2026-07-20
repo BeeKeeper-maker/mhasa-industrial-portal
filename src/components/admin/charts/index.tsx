@@ -28,8 +28,8 @@ interface StatsData {
   totals: { leads: number; applications: number; recentLeads: number };
 }
 
-async function fetchStats(): Promise<StatsData | null> {
-  const res = await fetch("/api/admin/stats");
+async function fetchStats(days: number = 30): Promise<StatsData | null> {
+  const res = await fetch(`/api/admin/stats?days=${days}`);
   const json = await res.json();
   return json.success ? json.data : null;
 }
@@ -49,8 +49,8 @@ const STATUS_COLORS: Record<string, string> = {
 // ============================================================================
 // Leads Over Time — area chart
 // ============================================================================
-export function LeadsOverTimeChart() {
-  const { data, isLoading } = useQuery({ queryKey: ["admin-stats"], queryFn: fetchStats });
+export function LeadsOverTimeChart({ days = 30 }: { days?: number }) {
+  const { data, isLoading } = useQuery({ queryKey: ["admin-stats", days], queryFn: () => fetchStats(days) });
 
   if (isLoading) {
     return (
@@ -128,8 +128,8 @@ export function LeadsOverTimeChart() {
 // ============================================================================
 // Applications By Status — donut chart
 // ============================================================================
-export function ApplicationsByStatusChart() {
-  const { data, isLoading } = useQuery({ queryKey: ["admin-stats"], queryFn: fetchStats });
+export function ApplicationsByStatusChart({ days = 30 }: { days?: number }) {
+  const { data, isLoading } = useQuery({ queryKey: ["admin-stats", days], queryFn: () => fetchStats(days) });
 
   if (isLoading) {
     return (
@@ -205,8 +205,8 @@ export function ApplicationsByStatusChart() {
 // ============================================================================
 // Leads By Status — horizontal bar chart
 // ============================================================================
-export function LeadsByStatusChart() {
-  const { data, isLoading } = useQuery({ queryKey: ["admin-stats"], queryFn: fetchStats });
+export function LeadsByStatusChart({ days = 30 }: { days?: number }) {
+  const { data, isLoading } = useQuery({ queryKey: ["admin-stats", days], queryFn: () => fetchStats(days) });
 
   if (isLoading) {
     return (
