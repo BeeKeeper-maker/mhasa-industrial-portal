@@ -353,6 +353,7 @@ function ServicesSection() {
         <SectionHeading
           eyebrow={t.nav.services}
           title={locale === "ar" ? "حلول الأنابيب الشاملة" : "Comprehensive Piping Solutions"}
+          gradient
           subtitle={locale === "ar"
             ? "من تركيب الأنابيب كبيرة القطر إلى أعمال الألياف الزجاجية المخصصة — نقدم حلولاً هندسية متكاملة."
             : "From large-diameter pipe installation to custom fiberglass fabrication — we deliver end-to-end engineered solutions."}
@@ -502,6 +503,7 @@ function FeaturedProjects() {
             eyebrow={t.sections.featuredProjects}
             title={locale === "ar" ? "مشاريع نفخر بها" : "Projects We're Proud Of"}
             align="left"
+            gradient
           />
           <Button
             variant="outline"

@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import {
   ArrowRight, ChevronLeft, MapPin, Building2, Calendar, Wallet,
-  Tag, CheckCircle2, Sparkles, Maximize2, X, Search, ArrowUpDown, MessageCircle,
+  Tag, CheckCircle2, Sparkles, Maximize2, X, Search, ArrowUpDown, MessageCircle, GitCompare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,6 +29,7 @@ import { ProjectCard } from "@/components/site/cards";
 import { BeforeAfterSlider } from "@/components/site/before-after-slider";
 import { ProjectGridSkeleton } from "@/components/site/skeletons";
 import { LastUpdatedBadge } from "@/components/site/last-updated-badge";
+import { ReadingProgress } from "@/components/site/reading-progress";
 import { Icon } from "@/components/site/icon";
 import { useProjects, useProject } from "@/lib/hooks/use-queries";
 import { useAppStore } from "@/lib/store";
@@ -51,6 +52,16 @@ function ProjectsList() {
   const [category, setCategory] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<string>("newest");
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+
+  const toggleCompare = (id: string) => {
+    setCompareIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= 3) return prev;
+      return [...prev, id];
+    });
+  };
 
   // Fetch all projects to derive categories
   const { data: allProjects, isLoading: allLoading } = useProjects();
@@ -146,6 +157,23 @@ function ProjectsList() {
                   <SelectItem value="alpha">{locale === "ar" ? "أبجدي" : "Alphabetical"}</SelectItem>
                 </SelectContent>
               </Select>
+              <Button
+                variant={compareMode ? "default" : "outline"}
+                size="sm"
+                onClick={() => { setCompareMode(!compareMode); setCompareIds([]); }}
+                disabled={!allProjects?.length}
+                className="h-11"
+              >
+                <GitCompare className="h-4 w-4" />
+                {compareMode
+                  ? (locale === "ar" ? "خروج" : "Exit Compare")
+                  : (locale === "ar" ? "قارن" : "Compare")}
+                {compareIds.length > 0 && (
+                  <span className="ms-1 rounded-full bg-gold px-1.5 text-xs font-bold text-gold-foreground">
+                    {compareIds.length}
+                  </span>
+                )}
+              </Button>
             </div>
           </FadeIn>
 
@@ -200,7 +228,14 @@ function ProjectsList() {
           ) : (
             <div className="fade-in-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map((p, i) => (
-                <ProjectCard key={p.id} project={p} index={i} />
+                <ProjectCard
+                  key={p.id}
+                  project={p}
+                  index={i}
+                  compareMode={compareMode}
+                  compareSelected={compareIds.includes(p.id)}
+                  onCompareToggle={toggleCompare}
+                />
               ))}
             </div>
           )}
@@ -314,6 +349,8 @@ function ProjectDetail({ slug }: { slug: string }) {
 
   return (
     <div className="flex flex-col">
+      <ReadingProgress />
+
       {/* Hero with image overlay */}
       <section className="relative h-[60vh] min-h-[440px] w-full overflow-hidden bg-navy">
         {project.imageUrl ? (

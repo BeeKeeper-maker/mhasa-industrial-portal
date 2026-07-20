@@ -7,7 +7,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useState } from "react";
-import { ArrowRight, MapPin, Calendar, Quote, ArrowUpRight, Building2, Star } from "lucide-react";
+import { ArrowRight, MapPin, Calendar, Quote, ArrowUpRight, Building2, Star, Check, Plus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,7 +64,19 @@ export function ServiceCard({ service, index = 0 }: { service: ServiceDTO; index
 }
 
 // -------- Project Card --------
-export function ProjectCard({ project, index = 0 }: { project: ProjectDTO; index?: number }) {
+export function ProjectCard({
+  project,
+  index = 0,
+  compareMode = false,
+  compareSelected = false,
+  onCompareToggle,
+}: {
+  project: ProjectDTO;
+  index?: number;
+  compareMode?: boolean;
+  compareSelected?: boolean;
+  onCompareToggle?: (id: string) => void;
+}) {
   const { pick } = useLocale();
   const openProject = useAppStore((s) => s.openProject);
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -77,8 +89,10 @@ export function ProjectCard({ project, index = 0 }: { project: ProjectDTO; index
       transition={{ duration: 0.5, delay: index * 0.08 }}
     >
       <Card
-        className="group card-lift image-zoom relative h-full overflow-hidden cursor-pointer border-0 bg-muted/30 p-0"
-        onClick={() => openProject(project.slug)}
+        className={`group card-lift image-zoom relative h-full overflow-hidden cursor-pointer border-0 bg-muted/30 p-0 ${
+          compareSelected ? "ring-2 ring-gold" : ""
+        }`}
+        onClick={() => compareMode && onCompareToggle ? onCompareToggle(project.id) : openProject(project.slug)}
       >
         {/* Image */}
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
@@ -127,10 +141,21 @@ export function ProjectCard({ project, index = 0 }: { project: ProjectDTO; index
             </div>
           </div>
 
-          {/* Hover arrow */}
-          <div className="absolute top-4 end-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-primary opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:-translate-y-1">
-            <ArrowUpRight className="h-4 w-4 rtl:rotate-90" />
-          </div>
+          {/* Hover arrow / Compare badge */}
+          {compareMode ? (
+            <div className={cn(
+              "absolute top-4 end-4 flex h-9 w-9 items-center justify-center rounded-full border-2 transition-all",
+              compareSelected
+                ? "bg-gold border-gold text-gold-foreground"
+                : "bg-white/80 border-white text-primary hover:bg-white"
+            )}>
+              {compareSelected ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            </div>
+          ) : (
+            <div className="absolute top-4 end-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-primary opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:-translate-y-1">
+              <ArrowUpRight className="h-4 w-4 rtl:rotate-90" />
+            </div>
+          )}
         </div>
       </Card>
     </motion.div>

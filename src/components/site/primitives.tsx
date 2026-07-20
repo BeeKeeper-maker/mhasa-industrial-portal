@@ -16,6 +16,8 @@ interface SectionHeadingProps {
   align?: "left" | "center";
   className?: string;
   light?: boolean;
+  /** Apply animated navy→gold gradient to the title text. */
+  gradient?: boolean;
 }
 
 export function SectionHeading({
@@ -25,6 +27,7 @@ export function SectionHeading({
   align = "center",
   className,
   light = false,
+  gradient = false,
 }: SectionHeadingProps) {
   return (
     <div
@@ -56,7 +59,8 @@ export function SectionHeading({
         transition={{ duration: 0.6, delay: 0.05 }}
         className={cn(
           "text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-balance",
-          light ? "text-white" : "text-foreground"
+          light ? "text-white" : "text-foreground",
+          gradient && !light && "animated-gradient-text"
         )}
       >
         {title}
