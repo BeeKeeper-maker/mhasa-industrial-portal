@@ -6,6 +6,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useState } from "react";
 import { ArrowRight, MapPin, Calendar, Quote, ArrowUpRight, Building2, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +67,7 @@ export function ServiceCard({ service, index = 0 }: { service: ServiceDTO; index
 export function ProjectCard({ project, index = 0 }: { project: ProjectDTO; index?: number }) {
   const { pick } = useLocale();
   const openProject = useAppStore((s) => s.openProject);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
     <motion.div
@@ -80,13 +82,16 @@ export function ProjectCard({ project, index = 0 }: { project: ProjectDTO; index
       >
         {/* Image */}
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+          {/* Shimmer placeholder */}
+          {!imgLoaded && <div className="absolute inset-0 shimmer" aria-hidden="true" />}
           {project.imageUrl ? (
             <Image
               src={project.imageUrl}
               alt={pick(project.title, project.titleAr) ?? project.title}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              onLoad={() => setImgLoaded(true)}
+              className={`object-cover transition-all duration-700 group-hover:scale-110 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-primary/10 text-primary/40">
@@ -186,6 +191,7 @@ export function TestimonialCard({ testimonial, index = 0 }: { testimonial: Testi
 export function BlogCard({ post, index = 0 }: { post: BlogPostDTO; index?: number }) {
   const { pick, locale } = useLocale();
   const openPost = useAppStore((s) => s.openPost);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
     <motion.div
@@ -199,13 +205,16 @@ export function BlogCard({ post, index = 0 }: { post: BlogPostDTO; index?: numbe
         onClick={() => openPost(post.slug)}
       >
         <div className="relative aspect-[16/9] overflow-hidden bg-muted">
+          {/* Shimmer placeholder */}
+          {!imgLoaded && post.coverImage && <div className="absolute inset-0 shimmer" aria-hidden="true" />}
           {post.coverImage && (
             <Image
               src={post.coverImage}
               alt={pick(post.title, post.titleAr) ?? post.title}
               fill
               sizes="(max-width: 768px) 100vw, 33vw"
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              onLoad={() => setImgLoaded(true)}
+              className={`object-cover transition-all duration-700 group-hover:scale-105 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
             />
           )}
           <div className="absolute top-3 start-3">

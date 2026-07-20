@@ -339,6 +339,30 @@
   width: 100%;
 }
 
+/* Hero text gradient — white to gold sweep */
+.hero-text-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #ffffff 60%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Animated gradient text — for section headings */
+.animated-gradient-text {
+  background: linear-gradient(90deg, var(--navy), var(--gold), var(--navy));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: gradient-shift 4s linear infinite;
+}
+@keyframes gradient-shift {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
 /* Marquee for client logos */
 @keyframes marquee {
   0% { transform: translateX(0); }

@@ -773,3 +773,62 @@ Task: Add image blur-up placeholder, last-updated badges on content, bulk status
   9. Extend bulk actions to applications panel
   10. Sitemap priority/frequency per view type
 - **Styling enhancements**: Animated stat counters with scroll-trigger, gradient borders on featured project cards, hero text gradient.
+
+---
+Task ID: 12 (Cron Review Round 8 — Image Blur-up, Hero Gradient, Bulk Apps Actions)
+Agent: webDevReview cron (autonomous)
+Task: Apply blur-up image loading to cards, add hero text gradient, extend bulk actions to applications
+
+## Current Project Status Assessment
+- **Stable**: All previous 31+ features working.
+- **Lint**: clean (0 errors, 0 warnings).
+- **Server**: Home HTTP 200, Site API 7 svc/3 hero, admin apps requires auth.
+- **Zero runtime errors** in dev.log.
+
+## Current Goals / Completed Modifications
+
+### Features Completed This Round
+
+1. **Image Blur-Up Loading** (applied to ProjectCard + BlogCard)
+   - Added `imgLoaded` state + `onLoad` handler to ProjectCard.
+   - Shimmer placeholder div shows behind image until load completes.
+   - Image fades in with `opacity-0 → opacity-100` transition (0.7s).
+   - Same pattern applied to BlogCard cover image.
+   - Eliminates jarring pop-in for all card images.
+
+2. **Hero Text Gradient** (home view)
+   - Added `.hero-text-gradient` CSS class — white→gold diagonal gradient via background-clip.
+   - Applied to home hero h1 — premium shimmering gold accent on large title.
+   - Also added `.animated-gradient-text` utility (navy→gold→navy animated) for future use on section headings.
+
+3. **Bulk Actions for Applications Panel** (matching leads panel)
+   - Added "Select" mode toggle with per-application checkboxes.
+   - Select All / Deselect All + selected count.
+   - Bulk status change dropdown (NEW/REVIEWING/SHORTLISTED/REJECTED/HIRED).
+   - Bulk delete with confirmation — parallel deletion via Promise.all.
+   - Gold accent ring on selected cards.
+   - Toast feedback: "X applications → STATUS" / "X applications deleted".
+   - Applications panel now has full parity with leads panel bulk actions.
+
+### Verification Results
+- `bun run lint` → **0 errors, 0 warnings** ✓
+- Home page: HTTP 200 ✓
+- Site API: 7 services, 3 heroes ✓
+- Admin applications API: correctly returns 401 without auth ✓
+- Zero runtime errors in dev.log ✓
+
+## Unresolved Issues / Risks / Next-Phase Recommendations
+- **Agent-browser QA**: Cannot reach localhost (sandbox isolation). QA via curl + dev.log.
+- **SmartImage**: Standalone component created but cards use inline blur-up pattern (simpler for fill images). Can swap to SmartImage for non-fill use cases.
+- **Next-phase feature ideas** (priority order):
+  1. Google Analytics 4 + Meta Pixel conditional loading based on cookie preferences
+  2. Project comparison feature (select 2-3, compare side-by-side)
+  3. Export leads/applications by date range (CSV with date filter)
+  4. Email notification on new lead (SMTP integration — placeholder in settings)
+  5. PWA offline support with service worker
+  6. Content versioning / draft preview for blog posts
+  7. Admin search across all content types
+  8. Sitemap priority/frequency per view type
+  9. Apply animated-gradient-text to section headings
+  10. Reading progress bar on blog detail (already exists) — extend to project detail
+- **Styling enhancements**: Gradient borders on featured project cards, animated stat counters, hero parallax depth layers.
