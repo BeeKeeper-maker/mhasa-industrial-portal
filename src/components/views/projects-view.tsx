@@ -28,6 +28,7 @@ import {
 import { ProjectCard } from "@/components/site/cards";
 import { BeforeAfterSlider } from "@/components/site/before-after-slider";
 import { ProjectGridSkeleton } from "@/components/site/skeletons";
+import { LastUpdatedBadge } from "@/components/site/last-updated-badge";
 import { Icon } from "@/components/site/icon";
 import { useProjects, useProject } from "@/lib/hooks/use-queries";
 import { useAppStore } from "@/lib/store";
@@ -363,6 +364,11 @@ function ProjectDetail({ slug }: { slug: string }) {
                 </span>
               )}
             </div>
+            {project.updatedAt && (
+              <div className="mt-3">
+                <LastUpdatedBadge date={project.updatedAt} locale={locale} className="text-white/60" />
+              </div>
+            )}
           </motion.div>
         </div>
       </section>

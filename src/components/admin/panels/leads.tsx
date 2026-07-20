@@ -92,6 +92,30 @@ export function AdminLeads() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const bulkStatusChange = useMutation({
+    mutationFn: async ({ ids, status }: { ids: string[]; status: string }) => {
+      const results = await Promise.all(
+        ids.map((id) =>
+          fetch(`/api/admin/leads/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status }),
+          }).then((r) => r.json())
+        )
+      );
+      const failed = results.filter((r: { success?: boolean }) => !r.success);
+      if (failed.length) throw new Error(`${failed.length} updates failed`);
+      return results;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
+      toast.success(`${variables.ids.length} leads → ${variables.status}`);
+      setSelected(new Set());
+      setBulkMode(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const toggleSelect = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -175,7 +199,25 @@ export function AdminLeads() {
               {selected.size} selected
             </span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
+            {/* Bulk status change */}
+            {selected.size > 0 && (
+              <Select
+                value=""
+                onValueChange={(v) => {
+                  if (v && confirm(`Change status of ${selected.size} leads to "${v}"?`)) {
+                    bulkStatusChange.mutate({ ids: Array.from(selected), status: v });
+                  }
+                }}
+              >
+                <SelectTrigger className="h-8 w-[150px] text-xs">
+                  <SelectValue placeholder="Set status…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
             <Button
               variant="destructive"
               size="sm"

@@ -20,6 +20,7 @@ import {
 import { ServiceCard, ProjectCard } from "@/components/site/cards";
 import { ServiceComparisonTable } from "@/components/site/service-comparison-table";
 import { ServiceGridSkeleton } from "@/components/site/skeletons";
+import { LastUpdatedBadge } from "@/components/site/last-updated-badge";
 import { Icon } from "@/components/site/icon";
 import { useServices, useService } from "@/lib/hooks/use-queries";
 import { useAppStore } from "@/lib/store";
@@ -166,6 +167,11 @@ function ServiceDetail({ slug }: { slug: string }) {
                 >
                   {excerpt}
                 </motion.p>
+              )}
+              {service.updatedAt && (
+                <div className="mt-4">
+                  <LastUpdatedBadge date={service.updatedAt} locale={locale} className="text-white/50" />
+                </div>
               )}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}

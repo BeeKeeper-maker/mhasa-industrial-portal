@@ -710,3 +710,66 @@ Task: Add premium card hover effects, skeleton-to-content fade, admin bulk delet
   9. Bulk status change (not just delete) for leads
   10. Admin search across all content types
 - **Styling enhancements**: Gradient borders on featured project cards, animated stat counters on scroll into view.
+
+---
+Task ID: 11 (Cron Review Round 7 — SmartImage, Last Updated Badge, Bulk Status Change)
+Agent: webDevReview cron (autonomous)
+Task: Add image blur-up placeholder, last-updated badges on content, bulk status change for leads
+
+## Current Project Status Assessment
+- **Stable**: All previous 28+ features working.
+- **Lint**: clean (0 errors, 0 warnings).
+- **Server**: Home HTTP 200, Site API 7 svc/3 hero, admin leads requires auth.
+- **Zero runtime errors** in dev.log.
+
+## Current Goals / Completed Modifications
+
+### Features Completed This Round
+
+1. **SmartImage Component** (`src/components/site/smart-image.tsx`)
+   - Next/Image wrapper with blur-up placeholder + shimmer loading effect.
+   - Shows `.shimmer` animation until image loads, then 0.5s fade-in transition.
+   - Configurable aspect ratio via `aspectClass` prop.
+   - Eliminates jarring image pop-in; smooth loading experience.
+   - Available for use across all views (not yet applied globally — can be progressively swapped in).
+
+2. **LastUpdatedBadge Component** (`src/components/site/last-updated-badge.tsx`)
+   - Displays relative "Updated X ago" text using `Intl.RelativeTimeFormat` (supports EN/AR).
+   - Smart time formatting: seconds → minutes → hours → days → weeks → months → years.
+   - Gold refresh icon for recent updates (<24h), clock icon otherwise.
+   - Tooltip with full timestamp on hover.
+   - Added `updatedAt?: string` field to ServiceDTO and ProjectDTO types.
+   - Applied to **Project detail** hero (below location info, white/50 opacity).
+   - Applied to **Service detail** hero (below excerpt, white/50 opacity).
+   - Bilingual: "Updated" / "تحديث".
+
+3. **Bulk Status Change for Leads**
+   - Added `bulkStatusChange` mutation to admin leads panel.
+   - Status dropdown appears in bulk action bar when leads are selected.
+   - Confirmation dialog before applying status to N leads.
+   - Parallel PATCH requests via Promise.all, toast feedback on success.
+   - Shows "X leads → STATUS" confirmation toast.
+   - Complements existing bulk delete — admins can now bulk-delete OR bulk-change-status.
+
+### Verification Results
+- `bun run lint` → **0 errors, 0 warnings** ✓
+- Home page: HTTP 200 ✓
+- Site API: 7 services, 3 heroes ✓
+- Admin leads API: correctly returns 401 without auth ✓
+- Zero runtime errors in dev.log ✓
+
+## Unresolved Issues / Risks / Next-Phase Recommendations
+- **Agent-browser QA**: Cannot reach localhost (sandbox isolation). QA via curl + dev.log.
+- **SmartImage**: Created but not yet applied to existing card components (ServiceCard, ProjectCard, BlogCard still use raw Next/Image). Can progressively swap in next round.
+- **Next-phase feature ideas** (priority order):
+  1. Apply SmartImage to all card components (ServiceCard, ProjectCard, BlogCard, GalleryView)
+  2. Google Analytics 4 + Meta Pixel conditional loading based on cookie preferences
+  3. Project comparison feature (select 2-3, compare side-by-side)
+  4. Export leads/applications by date range (CSV with date filter)
+  5. Email notification on new lead (SMTP integration — placeholder in settings)
+  6. PWA offline support with service worker
+  7. Content versioning / draft preview for blog posts
+  8. Admin search across all content types
+  9. Extend bulk actions to applications panel
+  10. Sitemap priority/frequency per view type
+- **Styling enhancements**: Animated stat counters with scroll-trigger, gradient borders on featured project cards, hero text gradient.

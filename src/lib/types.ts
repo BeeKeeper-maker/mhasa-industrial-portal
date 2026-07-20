@@ -27,6 +27,7 @@ export interface ServiceDTO {
   sortOrder: number;
   isFeatured: boolean;
   isActive: boolean;
+  updatedAt?: string;
 }
 
 export interface ProjectDTO {
@@ -49,6 +50,7 @@ export interface ProjectDTO {
   afterImage: string | null;
   isFeatured: boolean;
   services?: ServiceDTO[];
+  updatedAt?: string;
 }
 
 export interface BlogPostDTO {
