@@ -1,0 +1,346 @@
+// ============================================================================
+// MHASA — Mohd H. Al Marhoon Cont. Est. Corporate Website
+// Prisma Schema | SQLite datasource | Strict relational model
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------------------
+// Authentication & Authorization
+// ----------------------------------------------------------------------------
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  passwordHash  String
+  role          String   @default("ADMIN") // ADMIN | EDITOR | AUTHOR
+  avatarUrl     String?
+  isActive      Boolean  @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  activityLogs ActivityLog[]
+  blogPosts    BlogPost[]  @relation("BlogAuthor")
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // e.g. "CREATE_PROJECT", "DELETE_SERVICE"
+  entity    String   // e.g. "Project", "Service"
+  entityId  String?
+  metadata  String?  // JSON string
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ----------------------------------------------------------------------------
+// Core Content Entities
+// ----------------------------------------------------------------------------
+
+model Service {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  titleAr     String?
+  excerpt     String?
+  excerptAr   String?
+  description String
+  descriptionAr String?
+  icon        String?  // lucide icon name
+  imageUrl    String?
+  features    String?  // JSON string array of features
+  sortOrder   Int      @default(0)
+  isFeatured  Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  projects ProjectsToServices[]
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  titleAr       String?
+  clientName    String
+  category      String   // e.g. "RTR Pipe", "GRP Pipe", "Sewer Line"
+  location      String?
+  value         Float?
+  currency      String   @default("SAR")
+  startDate     DateTime?
+  completionDate DateTime?
+  description   String
+  descriptionAr String?
+  imageUrl      String?
+  galleryImages String?  // JSON string array of image URLs
+  beforeImage   String?
+  afterImage    String?
+  isFeatured    Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  services ProjectsToServices[]
+
+  @@index([category])
+  @@index([isFeatured])
+  @@index([completionDate])
+}
+
+model ProjectsToServices {
+  projectId String
+  serviceId String
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, serviceId])
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  titleAr     String?
+  excerpt     String?
+  excerptAr   String?
+  content     String   // markdown / rich text
+  contentAr   String?
+  coverImage  String?
+  category    String   @default("Company Updates") // Industry News | Company Updates | Articles
+  tags        String?  // JSON string array
+  status      String   @default("DRAFT") // DRAFT | PUBLISHED
+  views       Int      @default(0)
+  publishedAt DateTime?
+  authorId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author User? @relation("BlogAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([category])
+}
+
+model TeamMember {
+  id          String   @id @default(cuid())
+  name        String
+  nameAr      String?
+  designation String
+  designationAr String?
+  bio         String?
+  bioAr       String?
+  imageUrl    String?
+  linkedinUrl String?
+  email       String?
+  phone       String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  clientName  String
+  clientNameAr String?
+  designation String?
+  company     String?
+  content     String
+  contentAr   String?
+  rating      Int      @default(5)
+  avatarUrl   String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model GalleryItem {
+  id          String   @id @default(cuid())
+  title       String
+  titleAr     String?
+  description String?
+  imageUrl    String?
+  category    String   @default("Projects") // Projects | Equipment | Team | Office
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  name        String
+  nameAr      String?
+  logoUrl     String?
+  industry    String?
+  websiteUrl  String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ----------------------------------------------------------------------------
+// Careers
+// ----------------------------------------------------------------------------
+
+model Job {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  titleAr     String?
+  department  String
+  location    String
+  type        String   @default("Full-time") // Full-time | Part-time | Contract
+  experience  String?
+  description String
+  descriptionAr String?
+  requirements String? // JSON string array
+  salaryRange String?
+  status      String   @default("OPEN") // OPEN | CLOSED
+  closingDate DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  applications JobApplication[]
+
+  @@index([status])
+  @@index([department])
+}
+
+model JobApplication {
+  id        String   @id @default(cuid())
+  jobId     String
+  fullName  String
+  email     String
+  phone     String
+  coverLetter String?
+  resumeUrl String?
+  portfolioUrl String?
+  status    String   @default("NEW") // NEW | REVIEWING | SHORTLISTED | REJECTED | HIRED
+  createdAt DateTime @default(now())
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([status])
+}
+
+// ----------------------------------------------------------------------------
+// Contact / Leads
+// ----------------------------------------------------------------------------
+
+model ContactLead {
+  id          String   @id @default(cuid())
+  name        String
+  company     String?
+  email       String
+  phone       String
+  subject     String
+  message     String
+  projectBudget String? // < 100K SAR | 100K-500K | 500K-1M | 1M-5M | > 5M
+  attachmentUrl String?
+  status      String   @default("NEW") // NEW | CONTACTED | QUALIFIED | CONVERTED | LOST
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ----------------------------------------------------------------------------
+// Site Configuration
+// ----------------------------------------------------------------------------
+
+model SiteSetting {
+  id              String   @id @default("default")
+  siteName        String   @default("MHASA")
+  siteNameAr      String?
+  tagline         String?
+  taglineAr       String?
+  description     String?
+  descriptionAr   String?
+  logoUrl         String?
+  faviconUrl      String?
+  primaryColor    String?
+  accentColor     String?
+  email           String?
+  phonePrimary    String?
+  phoneSecondary  String?
+  address         String?
+  addressAr       String?
+  mapEmbedUrl     String?
+  whatsappNumber  String?
+  linkedinUrl     String?
+  facebookUrl     String?
+  instagramUrl    String?
+  youtubeUrl      String?
+  ga4Id           String?
+  metaPixelId     String?
+  recaptchaSiteKey String?
+  companyProfileUrl String?
+  updatedAt       DateTime @updatedAt
+}
+
+model HeroSlide {
+  id          String   @id @default(cuid())
+  title       String
+  titleAr     String?
+  subtitle    String?
+  subtitleAr  String?
+  imageUrl    String?
+  ctaText     String?
+  ctaTextAr   String?
+  ctaLink     String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FaqItem {
+  id        String   @id @default(cuid())
+  question  String
+  questionAr String?
+  answer    String
+  answerAr  String?
+  category  String   @default("General")
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Stat {
+  id        String   @id @default(cuid())
+  label     String
+  labelAr   String?
+  value     Int
+  suffix    String?  // e.g. "+", "%"
+  icon      String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+}

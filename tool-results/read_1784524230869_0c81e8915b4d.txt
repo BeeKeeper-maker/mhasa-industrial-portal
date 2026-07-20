@@ -1,0 +1,242 @@
+     1→# MHASA Corporate Website — Worklog
+     2→
+     3→## Project Overview
+     4→Building an ultra-premium, production-ready corporate website for **Mohd H. Al Marhoon Cont. Est. (MHASA)** — a Saudi construction/contracting company specializing in RTR/GRP/GRE/FRP pipe installation, sewer lines, and fiberglass engineering.
+     5→
+     6→**Tech Stack:** Next.js 16 (App Router) · TypeScript 5 · Tailwind CSS 4 · shadcn/ui · Prisma (SQLite) · NextAuth · Zustand · TanStack Query · Framer Motion
+     7→
+     8→**Constraint:** Only the `/` route is user-visible. All "pages" are managed via Zustand view-state. Admin is an authenticated overlay.
+     9→
+    10→---
+    11→Task ID: 1
+    12→Agent: Principal Architect (main orchestrator)
+    13→Task: Foundation — Prisma schema, DB, lib utilities, theme, layout, providers, seed data, backend API
+    14→
+    15→Work Log:
+    16→- Extracted requirements from `upload/Mhaksa Web Form.pdf` (7 pages): corporate site for Saudi pipe-installation contractor MHASA.
+    17→- Designed Prisma schema with 16 models: User, ActivityLog, Service, Project (+ ProjectsToServices join), BlogPost, TeamMember, Testimonial, GalleryItem, Client, Job, JobApplication, ContactLead, SiteSetting, HeroSlide, FaqItem, Stat.
+    18→- Ran `bun run db:push` — database synced at `db/custom.db`.
+    19→- Installed `bcryptjs` + `@types/bcryptjs` for password hashing.
+    20→- Built lib layer: `types.ts` (DTOs), `validations.ts` (Zod schemas), `auth.ts` (NextAuth credentials + bcrypt), `rate-limit.ts` (token-bucket), `api.ts` (response helpers + requireAdmin guard), `i18n.ts` (EN/AR dictionary), `store.ts` (Zustand view-state router with persist), `log-activity.ts`, `crud-factory.ts` (generic admin CRUD handlers).
+    21→- Customized `globals.css` with MHASA Navy/Gold brand palette (oklch color space), Poppins display + Inter body fonts, RTL support, premium scrollbar, marquee/shimmer animations, glass-card utilities.
+    22→- Updated `layout.tsx`: Poppins + Inter via next/font, full SEO metadata (OpenGraph, Twitter, robots, alternates for EN/AR), viewport theme color #0f1e3d.
+    23→- Created `Providers` component (NextAuth SessionProvider + next-themes + React Query).
+    24→- Wrote comprehensive seed script `prisma/seed.ts` with realistic Saudi construction data: 7 services, 8 projects (Aramco/SABIC/SWCC/Sadara), 4 team members, 3 testimonials, 8 clients, 8 gallery items, 3 jobs, 3 blog posts, 6 FAQs, 4 stats, 3 hero slides, site settings, admin user (admin@mhaksa.com / Admin@2024).
+    25→- Ran seed successfully — all 16 entities populated.
+    26→- Built public API routes: `/api/public/site` (consolidated home data), `/api/public/projects` (filtered + single by slug), `/api/public/blog`, `/api/public/jobs`, `/api/public/services`, `/api/public/team`, `/api/public/gallery`, `/api/search` (global search), `/api/contact` (rate-limited lead capture with honeypot), `/api/careers/apply` (multipart resume upload).
+    27→- Built admin CRUD routes (services, projects, blog) using crud-factory.
+    28→
+    29→Stage Summary:
+    30→- Database fully operational with seeded content.
+    31→- Auth, rate-limiting, validation, i18n, and CRUD factory all in place.
+    32→- Public + admin APIs established; remaining admin CRUD routes delegated to subagent (Task 2-a).
+    33→- Ready for frontend build (Tasks 3-6).
+    34→
+    35→---
+    36→Task ID: 2-a
+    37→Agent: (pending — subagent to complete remaining admin CRUD routes)
+    38→Task: Complete remaining admin CRUD routes following established crud-factory pattern
+    39→
+    40→Remaining admin routes to create:
+    41→- /api/admin/team (list+create) + [id] (get+update+delete)
+    42→- /api/admin/careers (jobs list+create) + [id]
+    43→- /api/admin/testimonials + [id]
+    44→- /api/admin/gallery + [id]
+    45→- /api/admin/clients + [id]
+    46→- /api/admin/faqs + [id]
+    47→- /api/admin/heroes + [id]
+    48→- /api/admin/stats + [id]
+    49→- /api/admin/leads (GET list, PATCH status) + [id] (DELETE)
+    50→- /api/admin/applications (GET list, PATCH status) + [id]
+    51→- /api/admin/settings (GET + PUT — single record, id="default")
+    52→- /api/admin/upload (POST multipart → return data URL)
+    53→- /api/admin/activity (GET activity log list)
+    54→
+    55→---
+    56→Task ID: 2-a (COMPLETED)
+    57→Agent: Admin CRUD Routes Subagent
+    58→Task: Complete all remaining admin CRUD API routes following the established crud-factory pattern.
+    59→
+    60→Work Log:
+    61→Files created (21 new route files + 1 lib fix):
+    62→
+    63→Standard CRUD routes (using crud-factory helpers):
+    64→- src/app/api/admin/team/route.ts — list (sortOrder asc) + create (teamMemberSchema)
+    65→- src/app/api/admin/team/[id]/route.ts — get + update + delete
+    66→- src/app/api/admin/careers/route.ts — list (createdAt desc) + create (jobSchema; transform: stringifyArray(requirements), parse closingDate → Date)
+    67→- src/app/api/admin/careers/[id]/route.ts — get + update (same transform) + delete
+    68→- src/app/api/admin/testimonials/route.ts — list (sortOrder asc) + create (testimonialSchema)
+    69→- src/app/api/admin/testimonials/[id]/route.ts — get + update + delete
+    70→- src/app/api/admin/gallery/route.ts — list (sortOrder asc) + create (galleryItemSchema)
+    71→- src/app/api/admin/gallery/[id]/route.ts — get + update + delete
+    72→- src/app/api/admin/clients/route.ts — list (sortOrder asc) + create (clientSchema)
+    73→- src/app/api/admin/clients/[id]/route.ts — get + update + delete
+    74→- src/app/api/admin/faqs/route.ts — list (sortOrder asc) + create (faqSchema) — model = db.faqItem
+    75→- src/app/api/admin/faqs/[id]/route.ts — get + update + delete
+    76→- src/app/api/admin/heroes/route.ts — list (sortOrder asc) + create (heroSlideSchema)
+    77→- src/app/api/admin/heroes/[id]/route.ts — get + update + delete
+    78→- src/app/api/admin/stats/route.ts — list (sortOrder asc) + create (statSchema)
+    79→- src/app/api/admin/stats/[id]/route.ts — get + update + delete
+    80→
+    81→Special routes (hand-written, not via factory):
+    82→- src/app/api/admin/leads/route.ts — GET (requireAdmin + optional ?status= filter + findMany orderBy createdAt desc), NO POST
+    83→- src/app/api/admin/leads/[id]/route.ts — GET + PATCH (validates status ∈ {NEW, CONTACTED, QUALIFIED, CONVERTED, LOST}, logs UPDATE_LEAD_STATUS) + DELETE
+    84→- src/app/api/admin/applications/route.ts — GET (requireAdmin + optional ?status= filter + findMany include:job orderBy createdAt desc), NO POST
+    85→- src/app/api/admin/applications/[id]/route.ts — GET (include job) + PATCH (validates status ∈ {NEW, REVIEWING, SHORTLISTED, REJECTED, HIRED}, logs UPDATE_APPLICATION_STATUS) + DELETE
+    86→- src/app/api/admin/settings/route.ts — GET (findUnique id="default") + PUT (whitelists 25 setting fields, upserts, logs UPDATE_SETTINGS). No [id] route.
+    87→- src/app/api/admin/upload/route.ts — POST multipart/form-data → base64 data URL. Validates file type ∈ {png, jpeg, webp, gif, pdf, octet-stream} and size ≤ 10MB (413 if exceeded). Returns { url, filename, size }.
+    88→- src/app/api/admin/activity/route.ts — GET (requireAdmin + findMany take:100 orderBy createdAt desc include user)
+    89→
+    90→Lib fix:
+    91→- src/lib/crud-factory.ts — Refactored model type signatures to use permissive `PrismaListDelegate`, `PrismaCreateDelegate`, `PrismaEntityDelegate` types (args: any). The original strict interfaces (`findUnique: (args: { where: { slug: string } }) => ...`) only matched slug-based models (Service/Project/BlogPost) and broke type-checking for non-slug models (TeamMember, Testimonial, GalleryItem, Client, FaqItem, HeroSlide, Stat, Job). Also removed the unused `findUnique`/`uniqueField` declarations from CreateConfig (they were declared but never invoked in makeCreateHandler). This is a non-breaking change — all existing Task 1 routes (services, projects, blog) still type-check cleanly.
+    92→
+    93→Lint & type-check:
+    94→- `bun run lint` → 0 errors, 0 warnings (clean).
+    95→- `bunx tsc --noEmit` → 0 errors in any /api/admin/* file (verified).
+    96→- Remaining pre-existing tsc errors (out of scope for Task 2-a): src/app/api/contact/route.ts references `attachmentUrl` not in contactLeadSchema (Task 1 bug), src/lib/i18n.ts AR/EN type mismatch (Task 1), and examples/skills/ scaffolding files.
+    97→
+    98→Stage Summary:
+    99→- All 13 admin resource groups now have complete CRUD coverage (or read-only / status-only where appropriate).
+   100→- Lead and application status workflows implemented as standalone PATCH handlers (factory only supports PUT).
+   101→- Settings singleton pattern (id="default") with field whitelist enforced server-side.
+   102→- Upload endpoint returns base64 data URLs — suitable for storing in TEXT columns (SQLite has no native binary type).
+   103→- Activity log endpoint returns the 100 most-recent entries with user inclusion.
+   104→- All admin routes are protected by `requireAdmin()` + `isErrorResponse(auth)` guard.
+   105→- Ready for admin frontend (Tasks 3-6) to consume these endpoints.
+   106→
+   107→---
+   108→Task ID: 3-a
+   109→Agent: Public Views Subagent (About / Services / Projects / Gallery)
+   110→Task: Build 4 premium public view components following the home-view.tsx pattern.
+   111→
+   112→Work Log:
+   113→Files created (4 named-export view components):
+   114→
+   115→1. src/components/views/about-view.tsx — `export function AboutView()`
+   116→   - **PageHero**: Navy gradient hero with decorative blurred gold/primary circles, breadcrumb (Home › About), SectionHeading (light, left-aligned) with eyebrow "Established 1995", dual CTA buttons (Request Quote → contact view, View Projects → projects view).
+   117→   - **CompanyHistory**: 12-column grid — sticky 4:5 portrait image with `AnimatedCounter` for "30+ Years of Excellence" + gold corner accent on one side; right column is a vertical Framer Motion timeline with 5 milestones (1995 founding → 2003 expansion → 2012 ISO 45001 → 2017 Aramco approved → Today "450+ Projects"). Each milestone is a numbered gold dot + Card with year + title + description. Closes with a quote-style settings.tagline callout with a gold left border.
+   118→   - **MissionVisionValues**: 3-column card layout on muted background with decorative gold blur. Each card has a primary-tinted icon (Target, Eye, ShieldCheck) that animates to filled primary on hover, eyebrow in gold, title, and description. Bilingual via `locale` ternary.
+   119→   - **CompanyStrength**: Navy section with glass-card grid of 6 certifications (ISO 45001, Saudi Aramco Approved, SABIC Approved, SWCC & Sadara, ASME B31.3, API 15HR) each with icon badge + check icon.
+   120→   - **LeadershipTeam**: `useTeam()` hook fetches team members. 4-column grid of `TeamMemberCard` (3:4 portrait photo with gradient overlay, hover-revealed social icons (LinkedIn/email/phone) conditionally rendered only if URLs exist, name, gold designation, line-clamped bio). Skeleton fallback while loading.
+   121→   - **CTASection**: Gradient navy hero with GoldDivider, "Ready to Work With Us?" heading, dual CTA buttons.
+   122→
+   123→2. src/components/views/services-view.tsx — `export function ServicesView()`
+   124→   - **Two-mode switch**: reads `useAppStore((s) => s.selectedServiceSlug)` — null → `ServicesList`, set → `ServiceDetail`.
+   125→   - **ServicesList**: `PageHero` (navy, breadcrumb, SectionHeading) → grid of `ServiceCard` (reused from cards.tsx) → `WhyOurServices` (navy glass-card 4-column grid: Safety-First Execution, Approved Contractor Status, Certified Specialist Crews, On-Time Delivery Promise) → `CTASection`.
+   126→   - **ServiceDetail**: Navy hero with back button (`resetSelection`) → service icon in gold-tinted square + animated title + excerpt + dual CTA → optional image card. Body: 12-col grid — left 7-col description (splits on \n into paragraphs) + inline 2×2 highlights grid; right 5-col sticky `Card` with navy header and feature checklist (animated list items, gold check icons). Related Projects section (conditional on `service.projects` array from API) reuses `ProjectCard` by mapping the partial project shape to a full `ProjectDTO`. Closes with `CTASection`.
+   127→   - Includes a 404 fallback ("No results" + back button) and a loading state.
+   128→
+   129→3. src/components/views/projects-view.tsx — `export function ProjectsView()`
+   130→   - **Two-mode switch**: reads `useAppStore((s) => s.selectedProjectSlug)`.
+   131→   - **ProjectsList**: `PageHero` → category filter bar (derives unique categories from all-projects list via `useMemo`, "All" + sorted unique categories, FilterChip styled as pill button with primary-active state). Uses `useProjects({ category })` for filtered fetch; falls back to `useProjects()` for "all". Grid of `ProjectCard`. Skeleton + empty states handled.
+   132→   - **ProjectDetail**: 60vh hero image with `hero-overlay` gradient, back button, gold category Badge, large title, client + location inline meta. Below: 6-column meta grid (Client, Category, Location, Project Value, Completion Date, Status) — value formatted via `Intl.NumberFormat` with `style: 'currency'` and `currency: 'SAR'`, locale-aware (`ar-SA` for Arabic, `en-US` for English). Dates formatted via `toLocaleDateString`. Description section (8-col with split paragraphs + 2×2 highlights) + sticky navy CTA sidebar (4-col). **Before/After slider** section conditionally rendered if `beforeImage && afterImage` — uses the `BeforeAfterSlider` component with localized Before/After labels. **Gallery** grid with `Maximize2` hover icon + cursor-zoom-in, opens **Dialog lightbox** with full-width image and DialogTitle (sr-only for a11y). **Related Services** section reuses a `ServiceMiniCard` (clickable → `openService(svc.slug)`). Closes with CTA.
+   133→   - Lightbox implemented with shadcn `Dialog` + `DialogContent` (max-w-5xl, black bg, custom close X button, prev/next chevrons for keyboard-style nav).
+   134→
+   135→4. src/components/views/gallery-view.tsx — `export function GalleryView()`
+   136→   - **Page Hero**: Navy hero with breadcrumb (Home › Gallery) and SectionHeading (light, left).
+   137→   - **Filter bar**: derives unique categories from `useGallery()` data; renders FilterChips for "All" + each category, with Arabic translations for the 4 known categories (Projects→مشاريع, Equipment→معدات, Team→الفريق, Office→المكتب).
+   138→   - **Masonry grid**: CSS columns layout (`columns-1 sm:columns-2 lg:columns-3 gap-4`) with `break-inside-avoid` on each tile. `GalleryTile` is a button with `cursor-zoom-in`, 4:3 aspect, hover zoom (scale-110), category Badge (top-start, gold), Maximize2 icon (top-end, white circle), title overlay (bottom, animated translate-y). Skeleton + empty states handled.
+   139→   - **Lightbox**: shadcn `Dialog` (max-w-5xl, black bg). Shows full image with `object-contain`, gradient caption with category badge + title + "X / Y" counter. Custom close button (top-end) + prev/next chevrons (start/end). Prev uses `ChevronLeft rtl:rotate-180`; Next uses `ChevronLeft rotate-180 rtl:rotate-0` to flip the icon direction without importing a second icon.
+   140→   - **CTA**: Navy gradient hero "Like What You See?" with dual CTA.
+   141→
+   142→Pattern compliance (all 4 files):
+   143→- `"use client"` directive.
+   144→- Named exports only (`export function AboutView()` etc.).
+   145→- Imports mirror home-view.tsx: `motion` from framer-motion, `Image` from next/image, lucide-react icons, shadcn `Button`/`Card`/`Badge`/`Dialog`, `SectionHeading`/`FadeIn`/`AnimatedCounter`/`GoldDivider` from primitives, cards from site/cards, `Icon` from site/icon, data hooks from use-queries, `useAppStore`, `useLocale`, `cn`.
+   146→- **NO `useRouter`** — all navigation goes through `useAppStore` (`setView`, `openService`, `openProject`, `resetSelection`).
+   147→- All text localized via `locale === "ar" ? ... : ...` or `pick(en, ar)` from `useLocale()`.
+   148→- RTL-aware: `start-*`/`end-*`/`ms-*`/`me-*`/`ps-*`/`pe-*` logical properties throughout; arrows use `rtl:rotate-180`.
+   149→- Brand palette only: `bg-navy`, `text-gold`, `bg-gold text-gold-foreground`, `bg-primary text-primary-foreground`. No indigo/blue anywhere.
+   150→- Tailwind utility patterns from home-view: `section-pad`, `container mx-auto px-6`, `bg-muted/30`, `text-balance`, `font-display`, `glass-card` (on navy), `hero-overlay`.
+   151→- `next/image` everywhere with `fill` + `sizes` for responsive loading.
+   152→- Page heroes use the established `<section className="relative py-16 md:py-24 bg-navy text-white overflow-hidden">` pattern with decorative blurred circles.
+   153→- Mobile-first responsive: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` (or 4 for team).
+   154→- Framer Motion: `motion.div`/`motion.h1`/`motion.button` with `initial`/`animate`/`whileInView` + `viewport={{ once: true }}`. `FadeIn` wraps slower-reveal blocks.
+   155→
+   156→Lint & type-check:
+   157→- `bunx eslint src/components/views/{about,services,projects,gallery}-view.tsx` → 0 errors, 0 warnings (clean).
+   158→- `bunx tsc --noEmit` → 0 errors in any of the 4 new view files (verified).
+   159→- Pre-existing errors remain out-of-scope: `before-after-slider.tsx` (Task 1 ref-access-during-render warning), `search-dialog.tsx` (Task 1 setState-in-effect warning), `home-view.tsx` lines 144 & 654 (`ctaTextAr` not in HeroSlideDTO type + `pick` not destructured in CTASection — pre-existing in the pattern reference file), `view-router.tsx` (references 6 view files not yet built by other agents — clients, careers, contact, news, faq, legal), admin dashboard (Task 2-b ResourceKey types), examples/skills scaffolding.
+   160→
+   161→Stage Summary:
+   162→- 4 of the 11 view components required by the single-route architecture are now production-ready: about, services (list + detail), projects (list + detail), gallery.
+   163→- All views are bilingual (EN/AR), RTL-aware, and use only the established brand palette and shared primitives.
+   164→- Project detail view delivers the full premium experience: hero overlay, meta grid with SAR currency formatting, before/after slider, gallery lightbox, related services.
+   165→- Gallery view provides a masonry layout with category filter and full keyboard-style lightbox navigation.
+   166→- Ready for sibling Task 3-b/c agents to build the remaining 7 views (clients, careers, contact, news, faq, privacy, terms) consumed by `view-router.tsx`.
+   167→
+   168→---
+   169→Task ID: 3-b
+   170→Agent: Public Views Subagent (Clients / Careers / Contact / News)
+   171→Task: Build 4 premium public view components following the home-view.tsx pattern.
+   172→
+   173→Work Log:
+   174→Files created (4 named-export view components):
+   175→
+   176→1. src/components/views/clients-view.tsx — `export function ClientsView()`
+   177→   - **PageHero**: Navy hero with decorative blurred gold/primary circles, breadcrumb (Home › Clients), SectionHeading (light, left-aligned) with eyebrow "Our Clients" and the title "Partners in Success".
+   178→   - **ClientsGrid**: Refined 4-column responsive grid (sm:2 → lg:3 → xl:4) of client logos via `useSiteData()`. Each `ClientTile` is a `motion.a` link that opens the client's `websiteUrl` in a new tab (gracefully renders as non-link when missing). Shows logo (or text fallback line-clamped), industry badge in uppercase tracking, hover lift (`whileHover={{y:-4}}` + gold border + shadow). ArrowUpRight icon flips to gold on hover.
+   179→   - **IndustriesSection**: 3-column icon grid of 6 target audiences — Government (Landmark), Oil & Gas (Flame), EPC (Building2), Industrial (Factory), Construction (HardHat), Engineering (Compass). Each card uses the home-view icon treatment (primary/5 → primary fill on hover, scale-110).
+   180→   - **TestimonialsSection**: Reuses `TestimonialCard` from cards.tsx + a gold-bordered average-rating callout card (computed from testimonials data, fills 5 gold stars). Decorative giant Quote icon in background.
+   181→   - **CTASection**: Gradient navy hero with GoldDivider, "Join Our Client Network" heading, dual CTA buttons (Request Quotation → contact, View Projects → projects).
+   182→
+   183→2. src/components/views/careers-view.tsx — `export function CareersView()`
+   184→   - **Two-mode switch**: reads `useAppStore((s) => s.selectedJobSlug)` — null → `CareersList`, set → `JobDetail`.
+   185→   - **CareersList**: `PageHero` (navy, breadcrumb, SectionHeading) → `WhyJoinSection` (4-column perks grid on muted bg: Career Growth, Safety Culture, Competitive Benefits, Meaningful Projects — each with lucide icon + bilingual title + description) → `SectionHeading` for open positions + department filter bar (derives unique departments from all-jobs list via `useMemo`, "All Departments" + sorted unique departments, FilterChip pill button with primary-active state). Uses `useJobs({ department })` for filtered fetch; falls back to `useJobs()` for "all". Grid of `JobCard` (Briefcase icon, type Badge, title, dept, meta rows for location/experience/salary, "Apply Now" button → `openJob(slug)`). Skeleton + empty states handled.
+   186→   - **JobDetail**: Navy hero with back button (`resetSelection`) → department Badge + animated title + meta chips (location, type, experience). Below: 6-column meta grid (Department, Location, Type, Experience, Salary, Closing Date — date formatted via `toLocaleDateString` locale-aware). Body: 12-col grid — left 8-col description (splits on `\n` into paragraphs) + requirements checklist (animated list items, gold check icons, muted bg rows); right 4-col sticky navy CTA sidebar with "Ready to Apply?" + scroll-to-form button. Below: `ApplicationFormSection` (scroll-mt-20 anchor target).
+   187→   - **ApplicationForm**: Controlled state (name, email, phone, coverLetter, portfolioUrl, website honeypot) + separate `resumeFile` File state. Validates client-side (required fields, email regex, resume file presence). On submit: builds `FormData` (jobId, jobTitle, name, email, phone, coverLetter, portfolioUrl, resume) and calls `useJobApplication().mutateAsync(fd)`. Shows `Loader2` spinner during submit, success toast on resolve + reset, error toast on failure. Resume upload uses a styled `<label htmlFor>` wrapping a visually-hidden `<input type="file" accept=".pdf,.doc,.docx...">`. Hidden honeypot field "website" silently drops submission if filled.
+   188→   - Includes 404 fallback ("No results" + back button) and loading state.
+   189→   - **CTASection**: "Don't See the Right Fit?" → "Send us your resume and we'll reach out" → Get In Touch button.
+   190→
+   191→3. src/components/views/contact-view.tsx — `export function ContactView()`
+   192→   - **PageHero**: Navy hero with breadcrumb (Home › Contact), SectionHeading (light, left) "Let's Talk About Your Project".
+   193→   - **ContactSection**: Two-column grid (lg:7 form + lg:5 info/map stack).
+   194→   - **ContactForm**: Card with SectionHeading (left-aligned) + form. Fields: Full Name, Company (optional), Email, Phone, Subject, Project Budget (`Select` dropdown populated from `t.budgets` array), Attachment URL (text input with FileText hint "PDF/DWG link"), Message (Textarea). Hidden honeypot field "website". Validates client-side (required fields + email regex). On submit: calls `useContactForm().mutateAsync({...})` (sends null for empty optional fields). Shows Loader2 spinner during submit, success toast + reset on resolve, error toast on failure.
+   195→   - **ContactInfoCard**: Navy card with gold-tinted icon badges for Address (`pick(address, addressAr)`), Phone (clickable `tel:` links — primary + secondary if present, `dir="ltr"`), Email (mailto), WhatsApp (`wa.me/` link from `whatsappNumber`). Social row (LinkedIn, Facebook, Instagram, YouTube) conditionally rendered only if URLs exist, each as a circular icon button that flips to gold on hover.
+   196→   - **MapCard**: Card with navy header strip "Find Us on the Map" + Google Map iframe (`settings.mapEmbedUrl`), rounded corners via Card overflow-hidden. Falls back to a muted placeholder with MapPin icon if no embed URL.
+   197→   - **WhatHappensNext**: 3-step process on muted bg — (1) Submit Your Inquiry (Send icon), (2) We Review Within 24h (ClipboardCheck), (3) Get Your Quotation (FileText). Each step has a numbered gold circle badge (-top-2 -end-2), gold-bordered icon circle on white, connecting horizontal gradient line (hidden on mobile). Closes with "Average response time: under 24 business hours" with Clock icon.
+   198→   - **CTASection**: "Prefer to Call Directly?" with phone button (`tel:` link via settings) + Explore Services button.
+   199→
+   200→4. src/components/views/news-view.tsx — `export function NewsView()`
+   201→   - **Two-mode switch**: reads `useAppStore((s) => s.selectedPostSlug)`.
+   202→   - **NewsList**: `PageHero` (navy, breadcrumb, SectionHeading "Latest News & Insights") → **category filter** with Arabic translations for the 3 known categories (Industry News → أخبار الصناعة, Company Updates → تحديثات الشركة, Articles → مقالات). Uses `useBlogPosts({ category })` for filtered fetch; falls back to `useBlogPosts()` for "all". Grid of `BlogCard` from cards.tsx. Skeleton + empty states handled.
+   203→   - **PostDetail**: 60vh cover image hero with `hero-overlay` gradient, back button (`resetSelection`), category Badge + publish date (locale-aware) + reading-time estimate (computed from word count / 200 wpm). Below: author + share bar (navy-bordered muted strip). Author block shows `User` icon + authorName + view count (Eye icon). Share buttons: LinkedIn (`linkedin.com/sharing/share-offsite/`), Twitter/X (`twitter.com/intent/tweet`), Copy Link (`navigator.clipboard.writeText` with Check icon feedback + sonner toast).
+   204→   - **Article body**: `ReactMarkdown` render with a comprehensive Tailwind prose-content class string covering h1/h2/h3, paragraphs, ul/ol lists, blockquotes (gold left border + muted bg), links (primary → gold on hover), code blocks (navy bg), and images. Wraps in `<article>` with `FadeIn`.
+   205→   - **Tags**: Rendered as secondary Badges with `#` prefix + Tag icon.
+   206→   - **Back button** at the bottom of the body.
+   207→   - **Related posts**: Conditionally rendered if there are other posts in the same category. Reuses `BlogCard` from cards.tsx. Section header has a "All News" outline button.
+   208→   - **CTASection**: "Have an Engineering Question?" with Sparkles + Get In Touch + Explore Services buttons.
+   209→
+   210→Pattern compliance (all 4 files):
+   211→- `"use client"` directive.
+   212→- Named exports only (`export function ClientsView()` etc.).
+   213→- Imports mirror home-view.tsx: `motion` from framer-motion, `Image` from next/image, lucide-react icons, shadcn `Button`/`Card`/`Badge`/`Input`/`Textarea`/`Label`/`Select` (where applicable), `SectionHeading`/`FadeIn`/`GoldDivider` from primitives, `BlogCard`/`TestimonialCard` from site/cards, data hooks from use-queries, `useAppStore`, `useLocale`, `cn` from lib/utils, `toast` from sonner.
+   214→- **NO `useRouter`** — all navigation goes through `useAppStore` (`setView`, `openJob`, `openPost`, `resetSelection`).
+   215→- All text localized via `locale === "ar" ? ... : ...` or `pick(en, ar)` from `useLocale()`.
+   216→- RTL-aware: `start-*`/`end-*`/`ms-*`/`me-*`/`ps-*`/`pe-*` logical properties throughout; arrows use `rtl:rotate-180`; phone numbers use `dir="ltr"` to ensure correct digit ordering in RTL mode.
+   217→- Brand palette only: `bg-navy`, `text-gold`, `bg-gold text-gold-foreground`, `bg-primary text-primary-foreground`. No indigo/blue anywhere.
+   218→- Tailwind utility patterns from home-view: `section-pad`, `container mx-auto px-6`, `bg-muted/30`, `text-balance`, `font-display`, `glass-card` (on navy heroes), `hero-overlay` (on cover-image heroes).
+   219→- `next/image` everywhere with `fill` + `sizes` for responsive loading (cover heroes) and `width`/`height` for client logos.
+   220→- Page heroes use the established `<section className="relative py-16 md:py-24 bg-navy text-white overflow-hidden">` pattern with decorative blurred circles.
+   221→- Mobile-first responsive: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` (or 4 for clients xl grid).
+   222→- Framer Motion: `motion.div`/`motion.h1`/`motion.a`/`motion.button`/`motion.li` with `initial`/`animate`/`whileInView` + `viewport={{ once: true }}`. `FadeIn` wraps slower-reveal blocks.
+   223→- Forms use shadcn `Input`/`Textarea`/`Label`/`Select`/`Button`. Show `Loader2` spinner during submit. Use `toast` from sonner for success + error feedback.
+   224→- Hidden honeypot fields ("website") on both contact form and job application form — visually hidden via `absolute -z-50 opacity-0 pointer-events-none h-0 w-0` and `aria-hidden`. Submission silently drops if filled.
+   225→- Application form uses native `FormData` (since `useJobApplication()` expects `FormData` for multipart upload to `/api/careers/apply`).
+   226→- Contact form sends a plain JSON object (since `useContactForm()` expects `Record<string, unknown>` for `/api/contact`).
+   227→- All file inputs accept `.pdf`, `.doc`, `.docx` MIME types.
+   228→- Client-side validation: required fields, email regex, phone presence. Errors display under each field as `text-xs text-destructive`.
+   229→
+   230→Lint & type-check:
+   231→- `bunx eslint src/components/views/{clients,careers,contact,news}-view.tsx` → 0 errors, 0 warnings (clean, including a strict `no-unused-vars` rule pass).
+   232→- `bunx tsc --noEmit` → 0 errors in any of the 4 new view files (verified — initial `SettingsLike` type resolved to `SiteSettingDTO | null` and failed when `data` was still loading; fixed by widening to `SiteSettingDTO | null | undefined`).
+   233→- Pre-existing errors remain out-of-scope: `before-after-slider.tsx` (Task 1 ref-access-during-render warning), `search-dialog.tsx` (Task 1 setState-in-effect warning), `home-view.tsx` (Task 1 `ctaTextAr`/`pick` issues), `view-router.tsx` (references faq + legal view files not yet built — Task 3-c).
+   234→- Full `bun run lint` shows 4 pre-existing errors + 1 warning — none in this task's files.
+   235→
+   236→Stage Summary:
+   237→- 4 more of the 11 view components required by the single-route architecture are now production-ready: clients, careers (list + detail with application form), contact (form + info + map + process), news (list + detail with markdown/share/related).
+   238→- All views are bilingual (EN/AR), RTL-aware, and use only the established brand palette and shared primitives.
+   239→- Contact + Careers deliver full form experiences with honeypot anti-spam, client-side validation, loading spinners, and sonner toasts.
+   240→- News detail view delivers premium article UX: cover hero, author/share bar, react-markdown rendering with comprehensive prose styling, tags, copy-link with toast, related posts.
+   241→- Ready for sibling Task 3-c agent to build the remaining 3 views (faq, privacy, terms) consumed by `view-router.tsx`.
+   242→

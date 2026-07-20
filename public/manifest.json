@@ -1,0 +1,17 @@
+{
+  "name": "MHASA — Mohd H. Al Marhoon Cont. Est.",
+  "short_name": "MHASA",
+  "description": "Leading Saudi contractor for RTR, GRP, GRE, FRP pipe installation, sewer lines, and fiberglass engineering solutions.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1e3d",
+  "theme_color": "#0f1e3d",
+  "icons": [
+    {
+      "src": "/hero-industrial.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
