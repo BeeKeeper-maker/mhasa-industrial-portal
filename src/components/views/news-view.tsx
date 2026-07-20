@@ -11,11 +11,12 @@ import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import {
   ArrowRight, ChevronLeft, Calendar, User, Tag, Clock,
-  Share2, Linkedin, Twitter, Link2, Check,
+  Share2, Linkedin, Twitter, Link2, Check, MessageCircle,
   Sparkles, Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ReadingProgress } from "@/components/site/reading-progress";
 import {
   SectionHeading, FadeIn, GoldDivider,
 } from "@/components/site/primitives";
@@ -214,6 +215,8 @@ function PostDetail({ slug }: { slug: string }) {
 
   return (
     <div className="flex flex-col">
+      <ReadingProgress />
+
       {/* Cover hero */}
       <section className="relative h-[60vh] min-h-[440px] w-full overflow-hidden bg-navy">
         {post.coverImage ? (
@@ -315,6 +318,15 @@ function PostDetail({ slug }: { slug: string }) {
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/60 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
               >
                 <Twitter className="h-4 w-4" />
+              </a>
+              <a
+                href={`https://wa.me/?text=${shareText}%20${encodeURIComponent(shareUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Share on WhatsApp"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/60 text-foreground hover:bg-[#25D366] hover:text-white transition-colors"
+              >
+                <MessageCircle className="h-4 w-4" />
               </a>
               <button
                 onClick={handleCopyLink}

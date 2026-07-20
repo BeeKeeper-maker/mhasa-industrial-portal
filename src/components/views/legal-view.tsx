@@ -10,17 +10,18 @@
 
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight, ChevronLeft, FileText, Mail,
-  Phone, ScrollText, Lock, Scale, ExternalLink,
+  Phone, ScrollText, Lock, Scale, ExternalLink, Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   SectionHeading, FadeIn, GoldDivider,
 } from "@/components/site/primitives";
+import { ReadingProgress } from "@/components/site/reading-progress";
 import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
 import { cn } from "@/lib/utils";
@@ -71,6 +72,8 @@ function LegalLayout({
 
   return (
     <div className="flex flex-col">
+      <ReadingProgress />
+
       <LegalHero
         title={title}
         eyebrow={eyebrow}
@@ -236,6 +239,27 @@ function LegalHero({
 function TableOfContents({ doc }: { doc: LegalDocument }) {
   const { locale } = useLocale();
   const isAr = locale === "ar";
+  const [activeId, setActiveId] = useState<string>("");
+
+  // Scroll-spy: highlight the section currently in view
+  useEffect(() => {
+    const sectionIds = ["legal-top", ...doc.sections.map((s) => s.id)];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActiveId(visible[0].target.id);
+      },
+      { rootMargin: "-100px 0px -70% 0px", threshold: 0 }
+    );
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [doc.sections]);
+
   return (
     <div className="sticky top-24">
       <div className="rounded-xl border border-border/60 bg-muted/30 p-5">
@@ -246,7 +270,12 @@ function TableOfContents({ doc }: { doc: LegalDocument }) {
         <nav className="space-y-1">
           <a
             href="#legal-top"
-            className="block text-xs text-muted-foreground hover:text-primary transition-colors"
+            className={cn(
+              "block rounded-md px-2 py-1.5 text-xs transition-colors",
+              activeId === "legal-top" || activeId === ""
+                ? "text-primary font-semibold bg-background"
+                : "text-muted-foreground hover:text-primary"
+            )}
           >
             {isAr ? "أعلى الوثيقة" : "Top of document"}
           </a>
@@ -254,12 +283,23 @@ function TableOfContents({ doc }: { doc: LegalDocument }) {
             <a
               key={s.id}
               href={`#${s.id}`}
-              className="group flex items-start gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-background hover:text-primary transition-colors"
+              className={cn(
+                "group flex items-start gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+                activeId === s.id
+                  ? "bg-background text-primary font-semibold"
+                  : "text-muted-foreground hover:bg-background hover:text-primary"
+              )}
             >
-              <span className="mt-0.5 text-[10px] font-bold font-display text-gold/70 group-hover:text-gold">
+              <span className={cn(
+                "mt-0.5 text-[10px] font-bold font-display transition-colors",
+                activeId === s.id ? "text-gold" : "text-gold/70 group-hover:text-gold"
+              )}>
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span className="leading-snug">{isAr ? s.titleAr : s.titleEn}</span>
+              {activeId === s.id && (
+                <span className="mt-1.5 h-1 w-1 rounded-full bg-gold flex-shrink-0" />
+              )}
             </a>
           ))}
         </nav>
@@ -391,6 +431,15 @@ function LegalCTA() {
               className="h-12 px-8 text-base"
             >
               {t.nav.home}
+            </Button>
+            <Button
+              size="lg"
+              variant="ghost"
+              onClick={() => window.print()}
+              className="h-12 px-6 text-base no-print"
+            >
+              <Printer className="h-5 w-5 me-2" />
+              {locale === "ar" ? "طباعة" : "Print"}
             </Button>
           </div>
         </div>

@@ -438,3 +438,78 @@ Task: QA assessment + add dark mode, newsletter, quick-quote widget, enhanced pr
   9. Image lazy-loading with blur-up placeholder
   10. Google Analytics 4 + Meta Pixel integration (placeholders exist in settings)
 - **Styling enhancements** for next round: more micro-interactions, hover states on cards, scroll-triggered animations, parallax hero.
+
+---
+Task ID: 7 (Cron Review Round 3 — Cookie Prefs, Print, Parallax, Scroll-Spy)
+Agent: webDevReview cron (autonomous)
+Task: Complete cookie preferences feature + add print stylesheet, parallax, TOC scroll-spy, micro-animations
+
+## Current Project Status Assessment
+- **Stable**: All previous features working (dark mode, newsletter, quick-quote, project filters, testimonial carousel, 404 page, service comparison table, reading progress bar, blog WhatsApp share).
+- **Lint**: clean (0 errors, 0 warnings).
+- **Server**: All routes HTTP 200, zero runtime errors. Site API returns 7 services, 3 heroes, 6 FAQs.
+- **404 page**: HTTP 404 branded page working.
+- **Agent-browser**: Cannot reach localhost (sandbox isolation). QA via curl + dev.log.
+
+## Current Goals / Completed Modifications
+
+### Features Completed This Round
+
+1. **Cookie Preferences Modal** (completed from last round)
+   - Added full Arabic translations for all 10 new cookie strings (preferences, preferencesTitle, preferencesDesc, necessary, necessaryDesc, alwaysOn, analytics, analyticsDesc, marketing, marketingDesc, cancel, savePrefs).
+   - Fixed lint error: moved localStorage preference loading from useEffect to lazy useState initializer (avoids setState-in-effect).
+   - Granular toggles: Necessary (always on), Analytics, Marketing — persisted to localStorage.
+   - Modal with navy header, icon badges per category, save/cancel buttons.
+
+2. **Print Stylesheet** (`globals.css` @media print)
+   - Forces light theme + black text on white for printing.
+   - Hides all interactive UI (header, footer, floating buttons, nav, cookie consent, quick-quote, search).
+   - Removes decorative backgrounds/shadows.
+   - Legal typography: serif font, proper heading sizes, page breaks (avoid breaking inside headings/tables).
+   - Shows URLs after links for reference.
+   - Page numbers in footer (@bottom-center counter).
+   - Added `Printer` button to legal CTA section (calls `window.print()`).
+
+3. **Parallax Hero Image** (About preview on home)
+   - Created `useParallax` hook using Framer Motion's `useScroll` + `useTransform`.
+   - Applied to About preview image — subtle vertical shift (±20px) as user scrolls.
+   - Image container has `-inset-y-12` to prevent edge gaps during parallax movement.
+
+4. **TOC Scroll-Spy** (legal pages — Privacy/Terms)
+   - Enhanced `TableOfContents` with `IntersectionObserver` scroll-spy.
+   - Active section highlighted with primary color, gold number badge, gold dot indicator.
+   - Smooth transition between active states.
+   - Root margin tuned (-100px top, -70% bottom) for optimal trigger point.
+
+5. **Scroll-Reveal Animation Variants** (`use-scroll-reveal.ts`)
+   - Created reusable Framer Motion variants: `staggerContainer`, `fadeUpItem`, `scaleItem`, `slideLeftItem`, `slideRightItem`.
+   - `viewportOnce` config for consistent whileInView behavior.
+   - Available for future use across all views.
+
+6. **Global UX Polish** (`globals.css`)
+   - `scroll-behavior: smooth` on html for in-page anchor jumps.
+   - `:focus-visible` gold outline for keyboard accessibility.
+   - `::selection` gold highlight for text selection.
+
+### Verification Results
+- `bun run lint` → **0 errors, 0 warnings** ✓
+- Home page: HTTP 200 ✓
+- 404 page: HTTP 404 (branded) ✓
+- Site API: 7 services, 3 heroes, 6 FAQs ✓
+- Zero runtime errors in dev.log ✓
+
+## Unresolved Issues / Risks / Next-Phase Recommendations
+- **Agent-browser QA**: Still cannot reach localhost. QA done via curl + dev.log.
+- **Server memory**: ~30% of 4GB during compilation. Stable but could benefit from production build.
+- **Next-phase feature ideas** (priority order):
+  1. Google Analytics 4 + Meta Pixel conditional loading based on cookie preferences (read `mhasa-cookie-prefs` from localStorage, only inject scripts if analytics/marketing enabled)
+  2. Project comparison feature (select 2-3 projects, compare side-by-side table)
+  3. Image blur-up placeholder (global Next/Image enhancement with dominant color extraction)
+  4. Animated page transitions between views (slide + fade, not just fade)
+  5. Blog post estimated reading progress with section markers
+  6. Admin dashboard charts (leads over time, applications by department) using Recharts
+  7. WhatsApp Click-to-Chat with pre-filled message per service/project
+  8. Sticky "table of contents" for long blog posts (like legal pages)
+  9. Search results highlighting (bold the matched query term)
+  10. "Last updated" timestamp on all admin-edited content
+- **Styling enhancements**: More micro-interactions on hover, card lift effects, gradient borders on featured items.

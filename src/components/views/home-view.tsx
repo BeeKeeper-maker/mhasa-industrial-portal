@@ -23,6 +23,7 @@ import { Icon } from "@/components/site/icon";
 import { useSiteData, useProjects, useServices } from "@/lib/hooks/use-queries";
 import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
+import { useParallax } from "@/lib/hooks/use-parallax";
 import { cn } from "@/lib/utils";
 
 export function HomeView() {
@@ -242,6 +243,7 @@ function TrustBar() {
 function AboutPreview() {
   const setView = useAppStore((s) => s.setView);
   const { t, locale } = useLocale();
+  const { ref: aboutImageRef, y: aboutImageY } = useParallax(40);
 
   return (
     <section className="section-pad bg-background">
@@ -249,14 +251,16 @@ function AboutPreview() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Image side */}
           <FadeIn className="relative">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-2xl">
-              <Image
-                src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=900&q=80"
-                alt="MHASA pipe installation project"
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-              />
+            <div ref={aboutImageRef} className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-2xl">
+              <motion.div style={{ y: aboutImageY }} className="absolute inset-0 -inset-y-12">
+                <Image
+                  src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=900&q=80"
+                  alt="MHASA pipe installation project"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                />
+              </motion.div>
               <div className="absolute inset-0 bg-gradient-to-t from-navy/40 to-transparent" />
             </div>
             {/* Floating stat card */}

@@ -18,6 +18,7 @@ import {
   SectionHeading, FadeIn, GoldDivider,
 } from "@/components/site/primitives";
 import { ServiceCard, ProjectCard } from "@/components/site/cards";
+import { ServiceComparisonTable } from "@/components/site/service-comparison-table";
 import { Icon } from "@/components/site/icon";
 import { useServices, useService } from "@/lib/hooks/use-queries";
 import { useAppStore } from "@/lib/store";
@@ -71,6 +72,8 @@ function ServicesList() {
           )}
         </div>
       </section>
+
+      <ServiceComparisonTable />
 
       <WhyOurServices />
 
