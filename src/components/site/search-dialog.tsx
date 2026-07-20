@@ -4,8 +4,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
 import { Search, FileText, Briefcase, Building2, Layers } from "lucide-react";
 import {
   Dialog,
@@ -19,6 +18,21 @@ import { useAppStore } from "@/lib/store";
 import { useSearch } from "@/lib/hooks/use-queries";
 import { useLocale } from "@/lib/hooks/use-locale";
 import { cn } from "@/lib/utils";
+
+/** Highlights occurrences of `query` within `text` using <mark> tags. */
+function Highlight({ text, query }: { text: string; query: string }): ReactNode {
+  if (!query.trim()) return text;
+  const q = query.trim();
+  const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+  const parts = text.split(regex);
+  return parts.map((part, i) =>
+    regex.test(part) && part.toLowerCase() === q.toLowerCase() ? (
+      <mark key={i} className="bg-gold/30 text-foreground rounded px-0.5 font-semibold">{part}</mark>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
 
 export function SearchDialog() {
   const searchOpen = useAppStore((s) => s.searchOpen);
@@ -107,8 +121,8 @@ export function SearchDialog() {
                     <SearchItem key={p.id} onClick={() => handleProject(p.slug)}>
                       <Building2 className="h-4 w-4 text-primary" />
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm truncate">{p.title}</div>
-                        <div className="text-xs text-muted-foreground truncate">{p.clientName} · {p.category}</div>
+                        <div className="font-medium text-sm truncate"><Highlight text={p.title} query={query} /></div>
+                        <div className="text-xs text-muted-foreground truncate"><Highlight text={`${p.clientName} · ${p.category}`} query={query} /></div>
                       </div>
                     </SearchItem>
                   ))}
@@ -120,8 +134,8 @@ export function SearchDialog() {
                     <SearchItem key={s.id} onClick={() => handleService(s.slug)}>
                       <Layers className="h-4 w-4 text-primary" />
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm truncate">{s.title}</div>
-                        {s.excerpt && <div className="text-xs text-muted-foreground truncate">{s.excerpt}</div>}
+                        <div className="font-medium text-sm truncate"><Highlight text={s.title} query={query} /></div>
+                        {s.excerpt && <div className="text-xs text-muted-foreground truncate"><Highlight text={s.excerpt} query={query} /></div>}
                       </div>
                     </SearchItem>
                   ))}
@@ -133,7 +147,7 @@ export function SearchDialog() {
                     <SearchItem key={p.id} onClick={() => handlePost(p.slug)}>
                       <FileText className="h-4 w-4 text-primary" />
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm truncate">{p.title}</div>
+                        <div className="font-medium text-sm truncate"><Highlight text={p.title} query={query} /></div>
                         <div className="text-xs text-muted-foreground">{p.category}</div>
                       </div>
                     </SearchItem>
@@ -146,8 +160,8 @@ export function SearchDialog() {
                     <SearchItem key={j.id} onClick={() => handleJob(j.slug)}>
                       <Briefcase className="h-4 w-4 text-primary" />
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm truncate">{j.title}</div>
-                        <div className="text-xs text-muted-foreground truncate">{j.department} · {j.location}</div>
+                        <div className="font-medium text-sm truncate"><Highlight text={j.title} query={query} /></div>
+                        <div className="text-xs text-muted-foreground truncate"><Highlight text={`${j.department} · ${j.location}`} query={query} /></div>
                       </div>
                     </SearchItem>
                   ))}

@@ -8,6 +8,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Phone, Users, Building2, FileText, TrendingUp, ArrowUpRight, Mail } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  LeadsOverTimeChart, ApplicationsByStatusChart, LeadsByStatusChart,
+  ContentCountsGrid, TopCategoriesChart,
+} from "@/components/admin/charts";
 
 async function fetchAdmin(url: string) {
   const res = await fetch(url);
@@ -59,6 +63,19 @@ export function AdminOverview() {
           </Card>
         ))}
       </div>
+
+      {/* Analytics Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <LeadsOverTimeChart />
+        <ApplicationsByStatusChart />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <LeadsByStatusChart />
+        <TopCategoriesChart />
+      </div>
+
+      <ContentCountsGrid />
 
       {/* Recent Activity */}
       <Card className="p-5">

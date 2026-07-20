@@ -513,3 +513,68 @@ Task: Complete cookie preferences feature + add print stylesheet, parallax, TOC 
   9. Search results highlighting (bold the matched query term)
   10. "Last updated" timestamp on all admin-edited content
 - **Styling enhancements**: More micro-interactions on hover, card lift effects, gradient borders on featured items.
+
+---
+Task ID: 8 (Cron Review Round 4 — Admin Charts, View Transitions, Search Highlight, WhatsApp)
+Agent: webDevReview cron (autonomous)
+Task: Add admin dashboard analytics charts, enhanced view transitions, search result highlighting, WhatsApp click-to-chat
+
+## Current Project Status Assessment
+- **Stable**: All previous features working (dark mode, newsletter, quick-quote, project filters, testimonial carousel, 404, service comparison, reading progress, cookie preferences, print stylesheet, parallax, TOC scroll-spy).
+- **Lint**: clean (0 errors, 0 warnings).
+- **Server**: Home HTTP 200, Site API 7 svc/3 hero, admin stats API correctly requires auth.
+- **Zero runtime errors** in dev.log.
+
+## Current Goals / Completed Modifications
+
+### Features Completed This Round
+
+1. **Admin Dashboard Analytics Charts** (Recharts)
+   - New API `/api/admin/stats` — aggregates: leads over last 30 days (time series), applications by status, leads by status, content counts (10 types), top project categories with values, leads by budget.
+   - Created `src/components/admin/charts/index.tsx` with 5 chart components:
+     - `LeadsOverTimeChart` — area chart with gradient fill, last 30 days, tooltip with gold label.
+     - `ApplicationsByStatusChart` — donut chart with status-colored segments + legend.
+     - `LeadsByStatusChart` — horizontal bar chart showing pipeline breakdown.
+     - `ContentCountsGrid` — 10-tile grid with icon + count for all content types.
+     - `TopCategoriesChart` — animated progress bars with navy-to-gold gradient + total SAR value.
+   - Integrated all 5 charts into admin overview panel (between stat cards and recent activity).
+
+2. **Enhanced View Transitions**
+   - Updated `view-router.tsx` — views now slide up + fade in (y:16→0), exit with slight upward fade (y:0→-8).
+   - Smooth custom easing curve [0.22, 1, 0.36, 1] for premium feel.
+   - Duration 0.35s — perceptible but not slow.
+
+3. **Search Result Highlighting**
+   - Created `Highlight` component in search-dialog — wraps matched query text in `<mark>` with gold background.
+   - Applied to all 4 search result types: projects (title + client·category), services (title + excerpt), news (title), jobs (title + department·location).
+   - Case-insensitive regex matching, escaped special characters.
+
+4. **WhatsApp Click-to-Chat** (per service/project)
+   - Created `useWhatsApp` hook — reads site WhatsApp number from settings, builds wa.me URLs with pre-filled messages.
+   - Three message builders: `shareProject(title, client)`, `shareService(title)`, `generalInquiry()` — all bilingual EN/AR.
+   - Added WhatsApp button (green #25D366) to project detail CTA sidebar — pre-filled with project title + client name.
+   - Added WhatsApp button to service detail CTA — pre-filled with service title + quote request.
+   - Buttons appear only if WhatsApp number is configured in site settings.
+
+### Verification Results
+- `bun run lint` → **0 errors, 0 warnings** ✓
+- Home page: HTTP 200 ✓
+- Site API: 7 services, 3 heroes ✓
+- Admin stats API: correctly returns 401 without auth ✓
+- Zero runtime errors in dev.log ✓
+
+## Unresolved Issues / Risks / Next-Phase Recommendations
+- **Agent-browser QA**: Cannot reach localhost (sandbox isolation). QA via curl + dev.log.
+- **Recharts bundle size**: Charts add ~100KB to admin bundle; acceptable since admin-only.
+- **Next-phase feature ideas** (priority order):
+  1. Google Analytics 4 + Meta Pixel conditional loading based on cookie preferences
+  2. Image blur-up placeholder (global Next/Image enhancement)
+  3. Blog post table of contents (sticky, like legal pages) for long articles
+  4. Project comparison feature (select 2-3, compare side-by-side)
+  5. Admin dashboard date-range filter for charts (7/30/90 days)
+  6. "Last updated" badge on all admin-edited content
+  7. Export leads/applications by date range
+  8. Email notification on new lead (SMTP integration — placeholder in settings)
+  9. Sitemap priority/frequency per view type
+  10. PWA offline support with service worker
+- **Styling enhancements**: Card hover lift effects, gradient borders on featured items, skeleton loaders for all async content.

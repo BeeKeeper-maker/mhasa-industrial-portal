@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import {
   ArrowRight, ChevronLeft, CheckCircle2, Sparkles, ShieldCheck,
-  Award, Clock, Zap, Target, MapPin, Building2,
+  Award, Clock, Zap, Target, MapPin, Building2, MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -23,6 +23,7 @@ import { Icon } from "@/components/site/icon";
 import { useServices, useService } from "@/lib/hooks/use-queries";
 import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
+import { useWhatsApp } from "@/lib/hooks/use-whatsapp";
 import type { ServiceDTO } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -91,6 +92,7 @@ function ServiceDetail({ slug }: { slug: string }) {
   const resetSelection = useAppStore((s) => s.resetSelection);
   const setView = useAppStore((s) => s.setView);
   const openProject = useAppStore((s) => s.openProject);
+  const { shareService: waShareService } = useWhatsApp();
 
   if (isLoading) {
     return (
@@ -115,6 +117,7 @@ function ServiceDetail({ slug }: { slug: string }) {
   const title = pick(service.title, service.titleAr) ?? service.title;
   const excerpt = pick(service.excerpt, service.excerptAr);
   const description = pick(service.description, service.descriptionAr) ?? service.description;
+  const waService = waShareService(title);
   const relatedProjects = (service as ServiceDTO & { projects?: Array<{ id: string; slug: string; title: string; titleAr: string | null; clientName: string; category: string; location: string | null; imageUrl: string | null }> }).projects ?? [];
 
   return (
@@ -181,6 +184,17 @@ function ServiceDetail({ slug }: { slug: string }) {
                   {t.actions.requestQuote}
                   <ArrowRight className="ms-2 h-5 w-5 rtl:rotate-180" />
                 </Button>
+                {waService.url && (
+                  <a
+                    href={waService.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg bg-[#25D366] px-6 h-12 text-base font-semibold text-white hover:bg-[#1da851] transition-colors"
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                    {waService.label}
+                  </a>
+                )}
                 <Button
                   size="lg"
                   variant="outline"

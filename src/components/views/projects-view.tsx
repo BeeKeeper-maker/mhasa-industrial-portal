@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import {
   ArrowRight, ChevronLeft, MapPin, Building2, Calendar, Wallet,
-  Tag, CheckCircle2, Sparkles, Maximize2, X, Search, ArrowUpDown,
+  Tag, CheckCircle2, Sparkles, Maximize2, X, Search, ArrowUpDown, MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -31,6 +31,7 @@ import { Icon } from "@/components/site/icon";
 import { useProjects, useProject } from "@/lib/hooks/use-queries";
 import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
+import { useWhatsApp } from "@/lib/hooks/use-whatsapp";
 import type { ProjectDTO, ServiceDTO } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -247,6 +248,7 @@ function ProjectDetail({ slug }: { slug: string }) {
   const setView = useAppStore((s) => s.setView);
   const openService = useAppStore((s) => s.openService);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const { shareProject: waShareProject } = useWhatsApp();
 
   if (isLoading) {
     return (
@@ -273,6 +275,7 @@ function ProjectDetail({ slug }: { slug: string }) {
   const gallery = project.galleryImages ?? [];
   const hasBeforeAfter = !!project.beforeImage && !!project.afterImage;
   const services = project.services ?? [];
+  const waProject = waShareProject(title, project.clientName);
 
   // Currency formatting
   const formatCurrency = (val: number | null, currency: string) => {
@@ -438,6 +441,17 @@ function ProjectDetail({ slug }: { slug: string }) {
                     {t.actions.requestQuote}
                     <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" />
                   </Button>
+                  {waProject.url && (
+                    <a
+                      href={waProject.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1da851] transition-colors h-11"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      {waProject.label}
+                    </a>
+                  )}
                 </Card>
               </div>
             </FadeIn>
