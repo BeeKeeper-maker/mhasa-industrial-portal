@@ -171,7 +171,7 @@ export function AdminSearch({ open, onOpenChange }: AdminSearchProps) {
           )}
         </div>
 
-        <div className="max-h-[60vh] overflow-y-auto p-2">
+        <div className="max-h-[60dvh] overflow-y-auto p-2">
           {!query || query.length < 2 ? (
             <div className="py-16 text-center text-sm text-muted-foreground">
               <Search className="mx-auto h-10 w-10 mb-3 opacity-20" />

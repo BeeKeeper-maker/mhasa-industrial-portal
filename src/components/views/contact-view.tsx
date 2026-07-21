@@ -215,6 +215,9 @@ function ContactForm() {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder={locale === "ar" ? "اسمك الكامل" : "Your full name"}
+              autoComplete="name"
+              inputMode="text"
+              enterKeyHint="next"
               aria-invalid={!!errors.name}
             />
           </Field>
@@ -223,6 +226,8 @@ function ContactForm() {
               value={form.company}
               onChange={(e) => setForm({ ...form, company: e.target.value })}
               placeholder={locale === "ar" ? "اسم شركتك" : "Your company name"}
+              autoComplete="organization"
+              enterKeyHint="next"
             />
           </Field>
         </div>
@@ -234,14 +239,21 @@ function ContactForm() {
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               placeholder="name@example.com"
+              autoComplete="email"
+              inputMode="email"
+              enterKeyHint="next"
               aria-invalid={!!errors.email}
             />
           </Field>
           <Field label={t.common.phone} required error={errors.phone}>
             <Input
+              type="tel"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="+966 5x xxx xxxx"
+              autoComplete="tel"
+              inputMode="tel"
+              enterKeyHint="next"
               aria-invalid={!!errors.phone}
             />
           </Field>
@@ -252,6 +264,8 @@ function ContactForm() {
             value={form.subject}
             onChange={(e) => setForm({ ...form, subject: e.target.value })}
             placeholder={locale === "ar" ? "موضوع رسالتك" : "Subject of your message"}
+            autoComplete="off"
+            enterKeyHint="next"
             aria-invalid={!!errors.subject}
           />
         </Field>

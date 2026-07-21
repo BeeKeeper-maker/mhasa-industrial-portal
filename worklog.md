@@ -1187,3 +1187,91 @@ Task: Fix all CTO audit findings — config, TypeScript, ESLint, security, App R
 - **Pagination on admin list endpoints** (H4) — currently returns all records, acceptable for SQLite with <1000 records.
 - **Redis-backed rate limiter** (C8) — in-memory works for single-process dev; production should use Redis.
 - **Blog content URL sanitization** (H7) — ReactMarkdown doesn't sanitize URLs; can add `urlTransform` next round.
+
+---
+Task ID: 15 (Cron Review Round 11 — ESLint Cleanup + Blog Security)
+Agent: webDevReview cron
+Task: Fix ESLint warnings, add blog URL sanitization
+
+## Status
+- TypeScript: 0 errors, ESLint: 0 errors/5 warnings (down from 13), Home HTTP 200, Blog API 3 posts, zero runtime errors.
+
+## Completed
+1. ESLint config updated — underscore-prefixed unused params allowed. 8 warnings fixed (unused vars, img element, exhaustive-deps). 5 non-blocking perf warnings remain.
+2. Blog URL sanitization — ReactMarkdown urlTransform blocks javascript:/data: URLs (H7 security fix).
+
+## Remaining
+- 5 exhaustive-deps perf warnings (non-blocking)
+- Multi-route migration (Batch 7, sandbox-constrained)
+- Redis rate limiter (production)
+
+---
+Task ID: 16 (Cron Review Round 12 — Premium Styling Enhancements)
+Agent: webDevReview cron
+Task: Enhanced stats section, featured project badges, hero parallax depth layers
+
+## Status
+- TypeScript: 0 errors, ESLint: 0 errors/5 warnings, Home HTTP 200, Site API 7 svc/4 stats, zero runtime errors.
+
+## Completed
+1. **Stats Section Enhancement** — upgraded from flat layout to premium glass-morphism cards with: white/10 backdrop-blur background, navy icon tiles that scale+rotate on hover, decorative border circles, animated bottom-line grow on hover, lift+shadow effect.
+2. **Featured Project Badges** — added gold ring border + "★ Featured" navy badge on featured project cards (stacked below category badge).
+3. **Hero Parallax Depth Layers** — added 2 decorative geometric shapes (gold circle + white rotated square) with independent parallax scroll speeds (60px + 40px) using useParallax hook, creating multi-layer depth effect.
+
+## Remaining
+- 5 exhaustive-deps perf warnings (non-blocking)
+- Multi-route migration (Batch 7, sandbox-constrained)
+- Redis rate limiter (production)
+
+---
+Task ID: 17 (Routing + Mobile Optimization Fixes)
+Agent: webDevReview cron + Advanced Audit subagent
+Task: Advanced routing + mobile audit, then fix all critical mobile issues
+
+## Audit Results
+Advanced audit subagent found 31 issues (8 critical, 12 high, 11 medium/low).
+Full report at `/home/z/my-project/ROUTING_MOBILE_AUDIT.md` (542 lines).
+
+## Status
+- TypeScript: 0 errors, ESLint: 0 errors/5 warnings, Home HTTP 200, favicon HTTP 200, zero runtime errors.
+
+## Completed Fixes
+
+### Mobile Touch Targets (M-01)
+- `button.tsx` — default h-9→h-10 (40px), lg h-10→h-11 (44px WCAG), icon size-9→size-10 (40px)
+- `input.tsx` — h-9→h-10 (40px) for all inputs
+
+### Safe Area Insets (M-02)
+- `layout.tsx` — added `viewportFit: "cover"` to viewport export
+- `globals.css` — added `--safe-top/bottom/left/right` CSS vars, `.pb-safe`, `.pt-safe`, `.bottom-safe` utility classes
+- `floating-ui.tsx` — floating actions, cookie consent, back-to-top all use `bottom-safe` class
+- BackToTop button gets `mb-[env(safe-area-inset-bottom)]`
+
+### Dynamic Viewport Height (M-03)
+- Replaced ALL `vh` units with `dvh` across 9+ view files (home, projects, services, news, careers, search-dialog, floating-ui, project-comparison)
+- `globals.css` — `@supports (height: 100dvh)` fallback for `.h-screen`/`.min-h-screen`
+- Fixes iOS Safari address bar jump issue
+
+### Form Mobile Optimization (M-04)
+- `contact-view.tsx` — added `autoComplete` (name/organization/email/tel), `inputMode` (text/email/tel), `enterKeyHint` (next) to all form fields
+- Phone field changed from `type="text"` → `type="tel"` (shows numeric keyboard on mobile)
+- Enables mobile autofill, correct keyboard types, and keyboard "Next" button navigation
+
+### Missing Favicon/OG Image (M-11)
+- Created `public/favicon.svg` — branded Navy "M" with gold dot
+- Updated `layout.tsx` icons config to use favicon.svg + hero-industrial.png
+- Updated OpenGraph/Twitter images to use hero-industrial.png (existing file)
+- All icon references now point to existing files
+
+### prefers-reduced-motion (M-06)
+- `globals.css` — added `@media (prefers-reduced-motion: reduce)` that disables all animations/transitions
+- Disables shimmer, marquee, glow-pulse, animated-gradient-text for users with vestibular disorders
+- Sets scroll-behavior to auto, reduces all durations to 0.01ms
+
+## Remaining (Non-Blocking)
+- R-01: Single-route Zustand architecture — multi-route migration is 3-5 day effort, sandbox-constrained
+- R-08: Client-side data fetching only — Server Components migration needed for SSR data
+- M-05: Embla carousel unused — can swap testimonial/hero carousels to use touch-enabled Embla
+- M-09: PWA manifest needs proper 192/512 icons
+- M-10: Server-side `<html lang/dir>` for RTL flash prevention
+- 5 exhaustive-deps perf warnings (non-blocking)

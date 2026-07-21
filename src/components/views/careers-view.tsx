@@ -291,7 +291,7 @@ function JobDetail({ slug }: { slug: string }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center bg-background">
+      <div className="min-h-[60dvh] flex items-center justify-center bg-background">
         <div className="text-muted-foreground text-sm">{t.common.loading}</div>
       </div>
     );
@@ -299,7 +299,7 @@ function JobDetail({ slug }: { slug: string }) {
 
   if (!job) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 bg-background">
+      <div className="min-h-[60dvh] flex flex-col items-center justify-center gap-4 bg-background">
         <p className="text-muted-foreground">{t.common.noResults}</p>
         <Button onClick={resetSelection} variant="outline">
           <ChevronLeft className="me-2 h-4 w-4 rtl:rotate-180" />

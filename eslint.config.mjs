@@ -16,6 +16,19 @@ const eslintConfig = [
       "mini-services/**",
     ],
   },
+  {
+    rules: {
+      // Allow unused params/vars prefixed with underscore (convention for required-but-unused)
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;

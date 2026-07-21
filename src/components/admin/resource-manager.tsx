@@ -153,6 +153,7 @@ export function ResourceManager({ resource, title }: ResourceManagerProps) {
                 <div className="flex-1 min-w-0">
                   {(config.imageField && Boolean(item[config.imageField])) && (
                     <div className="mb-2 aspect-video rounded-lg overflow-hidden bg-muted">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={item[config.imageField] as string}
                         alt={String(item[config.titleField] ?? "")}

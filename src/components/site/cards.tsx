@@ -90,7 +90,7 @@ export function ProjectCard({
       <Card
         className={`group card-lift image-zoom relative h-full overflow-hidden cursor-pointer border-0 bg-muted/30 p-0 ${
           compareSelected ? "ring-2 ring-gold" : ""
-        }`}
+        } ${project.isFeatured ? "ring-1 ring-gold/40" : ""}`}
         onClick={() => compareMode && onCompareToggle ? onCompareToggle(project.id) : openProject(project.slug)}
       >
         {/* Image */}
@@ -115,10 +115,15 @@ export function ProjectCard({
           <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/20 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-95" />
 
           {/* Category badge */}
-          <div className="absolute top-4 start-4">
+          <div className="absolute top-4 start-4 flex flex-col gap-1.5">
             <Badge className="bg-gold text-gold-foreground hover:bg-gold font-semibold border-0">
               {project.category}
             </Badge>
+            {project.isFeatured && (
+              <Badge className="bg-navy/90 text-gold border-0 text-[10px] font-bold backdrop-blur-sm">
+                ★ Featured
+              </Badge>
+            )}
           </div>
 
           {/* Content overlay */}

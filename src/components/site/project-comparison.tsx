@@ -149,7 +149,7 @@ export function ProjectComparison({ selectedIds, onToggle, onRemove, onClear }: 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-lg max-h-[70vh] overflow-y-auto rounded-2xl bg-card shadow-2xl"
+              className="w-full max-w-lg max-h-[70dvh] overflow-y-auto rounded-2xl bg-card shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="sticky top-0 bg-navy text-white px-5 py-4 flex items-center justify-between">
