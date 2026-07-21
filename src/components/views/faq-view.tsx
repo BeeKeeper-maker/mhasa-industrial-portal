@@ -97,7 +97,7 @@ const CATEGORY_LABELS: Record<string, { en: string; ar: string }> = {
 function FaqSection() {
   const { t, locale, pick } = useLocale();
   const { data, isLoading } = useSiteData();
-  const faqs = data?.faqs ?? [];
+  const faqs = useMemo(() => data?.faqs ?? [], [data]);
 
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [search, setSearch] = useState("");

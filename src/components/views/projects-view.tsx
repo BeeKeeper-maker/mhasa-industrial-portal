@@ -67,7 +67,10 @@ function ProjectsList() {
   const { data: allProjects, isLoading: allLoading } = useProjects();
   const { data: filtered } = useProjects({ category });
 
-  const baseProjects = category === "all" ? (allProjects ?? []) : (filtered ?? []);
+  const baseProjects = useMemo(
+    () => category === "all" ? (allProjects ?? []) : (filtered ?? []),
+    [category, allProjects, filtered]
+  );
 
   // Client-side search + sort
   const projects = useMemo(() => {

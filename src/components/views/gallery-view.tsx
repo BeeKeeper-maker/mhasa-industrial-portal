@@ -30,7 +30,7 @@ export function GalleryView() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const { data: items, isLoading } = useGallery();
-  const list = items ?? [];
+  const list = useMemo(() => items ?? [], [items]);
 
   // Derive categories from the data
   const categories = useMemo(() => {

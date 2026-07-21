@@ -13,6 +13,8 @@ export function RtlRoot({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = locale;
     document.documentElement.dir = dir;
+    // Sync cookie so server can read locale on next page load (prevents RTL flash)
+    document.cookie = `mhasa-locale=${locale};path=/;max-age=31536000;samesite=lax`;
   }, [locale, dir]);
 
   return <>{children}</>;
