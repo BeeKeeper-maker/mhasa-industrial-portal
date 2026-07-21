@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useProjects } from "@/lib/hooks/use-queries";
 import { useLocale } from "@/lib/hooks/use-locale";
-import { useAppStore } from "@/lib/store";
+import { navigateToProject } from "@/lib/store";
 import type { ProjectDTO } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +33,6 @@ interface ProjectComparisonProps {
 export function ProjectComparison({ selectedIds, onToggle, onRemove, onClear }: ProjectComparisonProps) {
   const { data: allProjects } = useProjects();
   const { locale, pick } = useLocale();
-  const openProject = useAppStore((s) => s.openProject);
   const [modalOpen, setModalOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -149,7 +148,7 @@ export function ProjectComparison({ selectedIds, onToggle, onRemove, onClear }: 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-lg max-h-[70vh] overflow-y-auto rounded-2xl bg-card shadow-2xl"
+              className="w-full max-w-lg max-h-[70dvh] overflow-y-auto rounded-2xl bg-card shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="sticky top-0 bg-navy text-white px-5 py-4 flex items-center justify-between">
@@ -233,7 +232,7 @@ export function ProjectComparison({ selectedIds, onToggle, onRemove, onClear }: 
                       {selectedProjects.map((p) => (
                         <th key={p.id} className="p-4 text-center min-w-[180px]">
                           <button
-                            onClick={() => { setModalOpen(false); openProject(p.slug); }}
+                            onClick={() => { setModalOpen(false); navigateToProject(p.slug); }}
                             className="group"
                           >
                             <div className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">

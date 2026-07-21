@@ -23,8 +23,8 @@ import {
   SectionHeading, FadeIn, GoldDivider,
 } from "@/components/site/primitives";
 import { useSiteData, useContactForm } from "@/lib/hooks/use-queries";
-import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
+import { navigateToView } from "@/lib/store";
 import type { SiteSettingDTO } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -44,7 +44,6 @@ export function ContactView() {
 // ============================================================================
 function PageHero() {
   const { t, locale } = useLocale();
-  const setView = useAppStore((s) => s.setView);
 
   return (
     <section className="relative py-16 md:py-24 bg-navy text-white overflow-hidden">
@@ -59,7 +58,7 @@ function PageHero() {
           transition={{ duration: 0.5 }}
           className="flex items-center gap-2 text-xs text-white/60 mb-6"
         >
-          <button onClick={() => setView("home")} className="hover:text-gold transition-colors">
+          <button onClick={() => navigateToView("home")} className="hover:text-gold transition-colors">
             {t.nav.home}
           </button>
           <ChevronLeft className="h-3.5 w-3.5 rtl:rotate-180" />
@@ -215,6 +214,9 @@ function ContactForm() {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder={locale === "ar" ? "اسمك الكامل" : "Your full name"}
+              autoComplete="name"
+              inputMode="text"
+              enterKeyHint="next"
               aria-invalid={!!errors.name}
             />
           </Field>
@@ -223,6 +225,8 @@ function ContactForm() {
               value={form.company}
               onChange={(e) => setForm({ ...form, company: e.target.value })}
               placeholder={locale === "ar" ? "اسم شركتك" : "Your company name"}
+              autoComplete="organization"
+              enterKeyHint="next"
             />
           </Field>
         </div>
@@ -234,14 +238,21 @@ function ContactForm() {
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               placeholder="name@example.com"
+              autoComplete="email"
+              inputMode="email"
+              enterKeyHint="next"
               aria-invalid={!!errors.email}
             />
           </Field>
           <Field label={t.common.phone} required error={errors.phone}>
             <Input
+              type="tel"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="+966 5x xxx xxxx"
+              autoComplete="tel"
+              inputMode="tel"
+              enterKeyHint="next"
               aria-invalid={!!errors.phone}
             />
           </Field>
@@ -252,6 +263,8 @@ function ContactForm() {
             value={form.subject}
             onChange={(e) => setForm({ ...form, subject: e.target.value })}
             placeholder={locale === "ar" ? "موضوع رسالتك" : "Subject of your message"}
+            autoComplete="off"
+            enterKeyHint="next"
             aria-invalid={!!errors.subject}
           />
         </Field>
@@ -604,7 +617,6 @@ function WhatHappensNext() {
 // CTA Section.
 // ============================================================================
 function CTASection() {
-  const setView = useAppStore((s) => s.setView);
   const { t, locale } = useLocale();
   const { data: siteData } = useSiteData();
   const settings = siteData?.settings;
@@ -642,7 +654,7 @@ function CTASection() {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => setView("services")}
+              onClick={() => navigateToView("services")}
               className="border-white/30 bg-white/5 text-white hover:bg-white/15 hover:text-white h-12 px-8 text-base"
             >
               {t.actions.exploreServices}

@@ -22,14 +22,13 @@ import { ServiceGridSkeleton } from "@/components/site/skeletons";
 import { LastUpdatedBadge } from "@/components/site/last-updated-badge";
 import { Icon } from "@/components/site/icon";
 import { useServices, useService } from "@/lib/hooks/use-queries";
-import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
+import { navigateToView, navigateBack } from "@/lib/store";
 import { useWhatsApp } from "@/lib/hooks/use-whatsapp";
 import type { ServiceDTO } from "@/lib/types";
 
 export function ServicesView() {
-  const selectedSlug = useAppStore((s) => s.selectedServiceSlug);
-  if (selectedSlug) return <ServiceDetail slug={selectedSlug} />;
+  
   return <ServicesList />;
 }
 
@@ -81,16 +80,14 @@ function ServicesList() {
 // ============================================================================
 // Detail Mode — single service with description, features, related projects.
 // ============================================================================
-function ServiceDetail({ slug }: { slug: string }) {
+export function ServiceDetail({ slug }: { slug: string }) {
   const { data: service, isLoading } = useService(slug);
   const { t, locale, pick } = useLocale();
-  const resetSelection = useAppStore((s) => s.resetSelection);
-  const setView = useAppStore((s) => s.setView);
   const { shareService: waShareService } = useWhatsApp();
 
   if (isLoading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center bg-background">
+      <div className="min-h-[60dvh] flex items-center justify-center bg-background">
         <div className="text-muted-foreground text-sm">{t.common.loading}</div>
       </div>
     );
@@ -98,9 +95,9 @@ function ServiceDetail({ slug }: { slug: string }) {
 
   if (!service) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 bg-background">
+      <div className="min-h-[60dvh] flex flex-col items-center justify-center gap-4 bg-background">
         <p className="text-muted-foreground">{t.common.noResults}</p>
-        <Button onClick={resetSelection} variant="outline">
+        <Button onClick={navigateBack} variant="outline">
           <ChevronLeft className="me-2 h-4 w-4 rtl:rotate-180" />
           {locale === "ar" ? "العودة للخدمات" : "Back to Services"}
         </Button>
@@ -129,7 +126,7 @@ function ServiceDetail({ slug }: { slug: string }) {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
-            onClick={resetSelection}
+            onClick={navigateBack}
             className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-gold transition-colors mb-8"
           >
             <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
@@ -177,7 +174,7 @@ function ServiceDetail({ slug }: { slug: string }) {
               >
                 <Button
                   size="lg"
-                  onClick={() => setView("contact")}
+                  onClick={() => navigateToView("contact")}
                   className="bg-gold text-gold-foreground hover:bg-gold/90 font-semibold px-7 h-12 text-base shadow-xl shadow-gold/20"
                 >
                   {t.actions.requestQuote}
@@ -197,7 +194,7 @@ function ServiceDetail({ slug }: { slug: string }) {
                 <Button
                   size="lg"
                   variant="outline"
-                  onClick={() => setView("projects")}
+                  onClick={() => navigateToView("projects")}
                   className="border-white/30 bg-white/5 text-white hover:bg-white/15 hover:text-white h-12 px-7 text-base"
                 >
                   {t.actions.viewProjects}
@@ -303,7 +300,7 @@ function ServiceDetail({ slug }: { slug: string }) {
               />
               <Button
                 variant="outline"
-                onClick={() => setView("projects")}
+                onClick={() => navigateToView("projects")}
                 className="border-primary text-primary hover:bg-primary hover:text-primary-foreground self-start md:self-auto font-semibold"
               >
                 {t.actions.viewAll}
@@ -450,7 +447,6 @@ function PageHero({
   breadcrumb: string;
 }) {
   const { t } = useLocale();
-  const setView = useAppStore((s) => s.setView);
 
   return (
     <section className="relative py-16 md:py-24 bg-navy text-white overflow-hidden">
@@ -466,7 +462,7 @@ function PageHero({
           transition={{ duration: 0.5 }}
           className="flex items-center gap-2 text-xs text-white/60 mb-6"
         >
-          <button onClick={() => setView("home")} className="hover:text-gold transition-colors">
+          <button onClick={() => navigateToView("home")} className="hover:text-gold transition-colors">
             {t.nav.home}
           </button>
           <ChevronLeft className="h-3.5 w-3.5 rtl:rotate-180" />
@@ -489,7 +485,6 @@ function PageHero({
 // CTA Section.
 // ============================================================================
 function CTASection() {
-  const setView = useAppStore((s) => s.setView);
   const { t, locale } = useLocale();
 
   return (
@@ -512,7 +507,7 @@ function CTASection() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button
               size="lg"
-              onClick={() => setView("contact")}
+              onClick={() => navigateToView("contact")}
               className="bg-gold text-gold-foreground hover:bg-gold/90 font-semibold px-8 h-12 text-base shadow-xl shadow-gold/20"
             >
               {t.actions.requestQuote}
@@ -521,7 +516,7 @@ function CTASection() {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => setView("projects")}
+              onClick={() => navigateToView("projects")}
               className="border-white/30 bg-white/5 text-white hover:bg-white/15 hover:text-white h-12 px-8 text-base"
             >
               {t.actions.viewProjects}

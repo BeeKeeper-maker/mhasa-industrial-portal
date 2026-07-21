@@ -18,8 +18,8 @@ import {
 } from "@/components/site/primitives";
 import { TestimonialCard } from "@/components/site/cards";
 import { useSiteData } from "@/lib/hooks/use-queries";
-import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
+import { navigateToView } from "@/lib/store";
 import type { LucideIcon } from "lucide-react";
 
 export function ClientsView() {
@@ -39,7 +39,6 @@ export function ClientsView() {
 // ============================================================================
 function PageHero() {
   const { t, locale } = useLocale();
-  const setView = useAppStore((s) => s.setView);
 
   return (
     <section className="relative py-16 md:py-24 bg-navy text-white overflow-hidden">
@@ -54,7 +53,7 @@ function PageHero() {
           transition={{ duration: 0.5 }}
           className="flex items-center gap-2 text-xs text-white/60 mb-6"
         >
-          <button onClick={() => setView("home")} className="hover:text-gold transition-colors">
+          <button onClick={() => navigateToView("home")} className="hover:text-gold transition-colors">
             {t.nav.home}
           </button>
           <ChevronLeft className="h-3.5 w-3.5 rtl:rotate-180" />
@@ -337,7 +336,6 @@ function TestimonialsSection() {
 // CTA Section.
 // ============================================================================
 function CTASection() {
-  const setView = useAppStore((s) => s.setView);
   const { t, locale } = useLocale();
 
   return (
@@ -360,7 +358,7 @@ function CTASection() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button
               size="lg"
-              onClick={() => setView("contact")}
+              onClick={() => navigateToView("contact")}
               className="bg-gold text-gold-foreground hover:bg-gold/90 font-semibold px-8 h-12 text-base shadow-xl shadow-gold/20"
             >
               {t.actions.requestQuote}
@@ -369,7 +367,7 @@ function CTASection() {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => setView("projects")}
+              onClick={() => navigateToView("projects")}
               className="border-white/30 bg-white/5 text-white hover:bg-white/15 hover:text-white h-12 px-8 text-base"
             >
               <Sparkles className="me-2 h-4 w-4" />

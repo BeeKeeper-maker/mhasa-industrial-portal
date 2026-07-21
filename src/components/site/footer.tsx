@@ -6,14 +6,13 @@
 "use client";
 
 import { Phone, Mail, MapPin, Linkedin, Facebook, Instagram, Youtube, Download, Shield } from "lucide-react";
-import { useAppStore, type ViewKey } from "@/lib/store";
+import { useAppStore, navigateToView, navigateToService, type ViewKey } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
 import { useSiteData } from "@/lib/hooks/use-queries";
 import { useServices } from "@/lib/hooks/use-queries";
 import { NewsletterWidget } from "@/components/site/newsletter-widget";
 
 export function Footer() {
-  const setView = useAppStore((s) => s.setView);
   const setAdminOpen = useAppStore((s) => s.setAdminOpen);
   const { t, locale, pick } = useLocale();
   const { data: siteData } = useSiteData();
@@ -52,7 +51,7 @@ export function Footer() {
             </div>
             <div className="flex flex-wrap gap-3 flex-shrink-0">
               <button
-                onClick={() => setView("contact")}
+                onClick={() => navigateToView("contact")}
                 className="inline-flex items-center gap-2 rounded-lg bg-gold px-6 py-3 text-sm font-semibold text-gold-foreground hover:bg-gold/90 transition-colors shadow-lg shadow-gold/20"
               >
                 {t.actions.requestQuote}
@@ -117,7 +116,7 @@ export function Footer() {
               {quickLinks.map((link) => (
                 <li key={link.key}>
                   <button
-                    onClick={() => setView(link.key)}
+                    onClick={() => navigateToView(link.key)}
                     className="text-sm text-white/60 hover:text-gold transition-colors text-start"
                   >
                     {link.label}
@@ -136,7 +135,7 @@ export function Footer() {
               {(services ?? []).slice(0, 6).map((svc) => (
                 <li key={svc.id}>
                   <button
-                    onClick={() => useAppStore.getState().openService(svc.slug)}
+                    onClick={() => navigateToService(svc.slug)}
                     className="text-sm text-white/60 hover:text-gold transition-colors text-start line-clamp-1"
                   >
                     {pick(svc.title, svc.titleAr) ?? svc.title}
@@ -210,10 +209,10 @@ export function Footer() {
             <span>{t.common.rights}.</span>
           </div>
           <div className="flex items-center gap-4">
-            <button onClick={() => setView("privacy")} className="hover:text-gold transition-colors">
+            <button onClick={() => navigateToView("privacy")} className="hover:text-gold transition-colors">
               {t.common.privacyPolicy}
             </button>
-            <button onClick={() => setView("terms")} className="hover:text-gold transition-colors">
+            <button onClick={() => navigateToView("terms")} className="hover:text-gold transition-colors">
               {t.common.terms}
             </button>
             <button

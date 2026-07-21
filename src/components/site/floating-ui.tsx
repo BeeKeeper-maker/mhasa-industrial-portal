@@ -10,8 +10,8 @@ import { ArrowUp, Phone, MessageCircle, X, Cookie, ShieldCheck, BarChart3, Megap
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useSiteData } from "@/lib/hooks/use-queries";
-import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
+import { navigateToView } from "@/lib/store";
 
 // -------- Back To Top --------
 export function BackToTop() {
@@ -32,7 +32,7 @@ export function BackToTop() {
           exit={{ opacity: 0, scale: 0.6 }}
           transition={{ duration: 0.2 }}
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed bottom-24 end-4 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-navy text-white shadow-xl hover:bg-navy-light transition-colors"
+          className="fixed bottom-24 end-4 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-navy text-white shadow-xl hover:bg-navy-light transition-colors mb-[env(safe-area-inset-bottom)]"
           aria-label="Back to top"
         >
           <ArrowUp className="h-5 w-5" />
@@ -53,7 +53,7 @@ export function FloatingActions() {
     : null;
 
   return (
-    <div className="fixed bottom-4 end-4 z-40 flex flex-col gap-3">
+    <div className="fixed bottom-safe end-4 z-40 flex flex-col gap-3">
       {whatsappUrl && (
         <motion.a
           href={whatsappUrl}
@@ -113,7 +113,6 @@ export function CookieConsent() {
     return { necessary: true, analytics: true, marketing: false };
   });
   const { t } = useLocale();
-  const setView = useAppStore((s) => s.setView);
 
   useEffect(() => {
     const consent = localStorage.getItem("mhasa-cookie-consent");
@@ -150,7 +149,7 @@ export function CookieConsent() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="fixed bottom-4 start-4 z-50 max-w-md"
+            className="fixed bottom-safe start-4 z-50 max-w-md"
           >
             <div className="rounded-2xl border border-border bg-card p-5 shadow-2xl">
               <div className="flex items-start gap-3">
@@ -162,7 +161,7 @@ export function CookieConsent() {
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     {t.cookie.message}{" "}
                     <button
-                      onClick={() => { setView("privacy"); setShow(false); }}
+                      onClick={() => { navigateToView("privacy"); setShow(false); }}
                       className="font-medium text-primary underline hover:text-gold"
                     >
                       {t.cookie.privacy}
@@ -243,7 +242,7 @@ export function CookieConsent() {
                 </button>
               </div>
 
-              <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
+              <div className="p-5 space-y-4 max-h-[60dvh] overflow-y-auto">
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {t.cookie.preferencesDesc}
                 </p>

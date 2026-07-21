@@ -20,8 +20,8 @@ import { SectionHeading, AnimatedCounter, FadeIn, GoldDivider } from "@/componen
 import { ServiceCard, ProjectCard, TestimonialCard } from "@/components/site/cards";
 import { Icon } from "@/components/site/icon";
 import { useSiteData, useProjects } from "@/lib/hooks/use-queries";
-import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
+import { navigateToView } from "@/lib/store";
 import { useParallax } from "@/lib/hooks/use-parallax";
 import { cn } from "@/lib/utils";
 
@@ -47,10 +47,11 @@ export function HomeView() {
 // ============================================================================
 function HeroSection() {
   const { data: siteData } = useSiteData();
-  const setView = useAppStore((s) => s.setView);
   const { t, pick } = useLocale();
   const heroes = siteData?.heroes ?? [];
   const [index, setIndex] = useState(0);
+  const { y: heroLayer1Y } = useParallax(60);
+  const { y: heroLayer2Y } = useParallax(40);
 
   useEffect(() => {
     if (heroes.length <= 1) return;
@@ -60,7 +61,7 @@ function HeroSection() {
 
   if (heroes.length === 0) {
     return (
-      <section className="relative flex min-h-[70vh] items-center justify-center bg-navy">
+      <section className="relative flex min-h-[70dvh] items-center justify-center bg-navy">
         <div className="text-center text-white p-8">
           <h1 className="text-4xl md:text-6xl font-bold font-display">{t.common.tagline}</h1>
         </div>
@@ -71,7 +72,7 @@ function HeroSection() {
   const current = heroes[index];
 
   return (
-    <section className="relative h-[88vh] min-h-[600px] max-h-[860px] w-full overflow-hidden bg-navy">
+    <section className="relative h-[88dvh] min-h-[600px] max-h-[860px] w-full overflow-hidden bg-navy">
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
@@ -94,6 +95,22 @@ function HeroSection() {
           <div className="absolute inset-0 hero-overlay" />
         </motion.div>
       </AnimatePresence>
+
+      {/* Decorative parallax depth layers */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.15 }}
+        transition={{ delay: 0.5, duration: 1 }}
+        className="absolute top-20 end-10 h-32 w-32 rounded-full border-2 border-gold/30 pointer-events-none"
+        style={{ y: heroLayer1Y }}
+      />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.1 }}
+        transition={{ delay: 0.7, duration: 1 }}
+        className="absolute bottom-32 start-10 h-24 w-24 rounded-2xl border-2 border-white/20 rotate-12 pointer-events-none"
+        style={{ y: heroLayer2Y }}
+      />
 
       {/* Content */}
       <div className="relative z-10 container mx-auto flex h-full items-center px-6">
@@ -138,7 +155,7 @@ function HeroSection() {
           >
             <Button
               size="lg"
-              onClick={() => setView((current.ctaLink as "services" | "projects" | "contact") ?? "services")}
+              onClick={() => navigateToView((current.ctaLink as "services" | "projects" | "contact") ?? "services")}
               className="bg-gold text-gold-foreground hover:bg-gold/90 font-semibold px-7 h-12 text-base shadow-xl shadow-gold/20"
             >
               {pick(current.ctaText, current.ctaTextAr) ?? current.ctaText ?? t.actions.exploreServices}
@@ -147,7 +164,7 @@ function HeroSection() {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => setView("contact")}
+              onClick={() => navigateToView("contact")}
               className="border-white/30 bg-white/5 text-white backdrop-blur-sm hover:bg-white/15 hover:text-white h-12 px-7 text-base"
             >
               {t.actions.getInTouch}
@@ -240,7 +257,6 @@ function TrustBar() {
 // About Preview — company intro with image + key points + CTA.
 // ============================================================================
 function AboutPreview() {
-  const setView = useAppStore((s) => s.setView);
   const { locale } = useLocale();
   const { ref: aboutImageRef, y: aboutImageY } = useParallax(40);
 
@@ -317,7 +333,7 @@ function AboutPreview() {
 
             <FadeIn delay={0.4} className="mt-8">
               <Button
-                onClick={() => setView("about")}
+                onClick={() => navigateToView("about")}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
               >
                 {locale === "ar" ? "تعرّف علينا أكثر" : "Learn More About Us"}
@@ -337,7 +353,6 @@ function AboutPreview() {
 function ServicesSection() {
   const { data: siteData } = useSiteData();
   const services = siteData?.services ?? [];
-  const setView = useAppStore((s) => s.setView);
   const { t, locale } = useLocale();
 
   return (
@@ -368,7 +383,7 @@ function ServicesSection() {
           <Button
             variant="outline"
             size="lg"
-            onClick={() => setView("services")}
+            onClick={() => navigateToView("services")}
             className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold"
           >
             {t.actions.viewAll} {t.nav.services}
@@ -459,21 +474,34 @@ function StatsSection() {
   if (stats.length === 0) return null;
 
   return (
-    <section className="bg-gradient-to-br from-gold via-gold to-amber-600 py-16">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+    <section className="relative bg-gradient-to-br from-gold via-gold to-amber-600 py-16 overflow-hidden">
+      {/* Decorative pattern */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none">
+        <div className="absolute -top-10 -end-10 h-60 w-60 rounded-full border-[20px] border-navy" />
+        <div className="absolute -bottom-10 -start-10 h-40 w-40 rounded-full border-[15px] border-navy" />
+      </div>
+
+      <div className="container mx-auto px-6 relative">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {stats.map((stat, i) => (
-            <FadeIn key={stat.id} delay={i * 0.1} className="text-center">
-              <div className="flex justify-center mb-3">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-navy/10 text-navy">
-                  <Icon name={stat.icon} fallback={TrendingUp} className="h-7 w-7" />
+            <FadeIn key={stat.id} delay={i * 0.1}>
+              <div className="group relative rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 p-6 text-center transition-all duration-300 hover:bg-white/20 hover:-translate-y-1 hover:shadow-2xl hover:shadow-navy/20">
+                {/* Icon */}
+                <div className="flex justify-center mb-4">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-navy text-gold transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                    <Icon name={stat.icon} fallback={TrendingUp} className="h-7 w-7" />
+                  </div>
                 </div>
-              </div>
-              <div className="text-4xl md:text-5xl font-bold text-navy font-display">
-                <AnimatedCounter value={stat.value} suffix={stat.suffix ?? ""} />
-              </div>
-              <div className="mt-2 text-sm font-medium text-navy/80 uppercase tracking-wider">
-                {locale === "ar" ? (stat.labelAr ?? stat.label) : stat.label}
+                {/* Value */}
+                <div className="text-4xl md:text-5xl font-bold text-navy font-display">
+                  <AnimatedCounter value={stat.value} suffix={stat.suffix ?? ""} />
+                </div>
+                {/* Label */}
+                <div className="mt-2 text-xs md:text-sm font-semibold text-navy/80 uppercase tracking-wider">
+                  {locale === "ar" ? (stat.labelAr ?? stat.label) : stat.label}
+                </div>
+                {/* Decorative bottom line */}
+                <div className="mx-auto mt-3 h-0.5 w-0 bg-navy transition-all duration-500 group-hover:w-12" />
               </div>
             </FadeIn>
           ))}
@@ -488,7 +516,6 @@ function StatsSection() {
 // ============================================================================
 function FeaturedProjects() {
   const { data } = useProjects({ featured: true, limit: 6 });
-  const setView = useAppStore((s) => s.setView);
   const { t, locale } = useLocale();
   const projects = data ?? [];
 
@@ -506,7 +533,7 @@ function FeaturedProjects() {
           />
           <Button
             variant="outline"
-            onClick={() => setView("projects")}
+            onClick={() => navigateToView("projects")}
             className="border-primary text-primary hover:bg-primary hover:text-primary-foreground self-start md:self-auto font-semibold"
           >
             {t.actions.viewAll}
@@ -655,7 +682,6 @@ function TestimonialsSection() {
 // CTA Section — final call to action.
 // ============================================================================
 function CTASection() {
-  const setView = useAppStore((s) => s.setView);
   const { t, pick } = useLocale();
   const { data: siteData } = useSiteData();
   const settings = siteData?.settings;
@@ -680,7 +706,7 @@ function CTASection() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button
               size="lg"
-              onClick={() => setView("contact")}
+              onClick={() => navigateToView("contact")}
               className="bg-gold text-gold-foreground hover:bg-gold/90 font-semibold px-8 h-12 text-base shadow-xl shadow-gold/20"
             >
               {t.actions.requestQuote}

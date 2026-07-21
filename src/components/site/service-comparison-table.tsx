@@ -10,8 +10,8 @@ import { motion } from "framer-motion";
 import { CheckCircle2, X, ArrowRight, Table2 } from "lucide-react";
 import { SectionHeading, FadeIn } from "@/components/site/primitives";
 import { useServices } from "@/lib/hooks/use-queries";
-import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
+import { navigateToService } from "@/lib/store";
 import type { ServiceDTO } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -74,7 +74,6 @@ const capabilities: CapabilityRow[] = [
 export function ServiceComparisonTable() {
   const { data: services } = useServices();
   const { locale } = useLocale();
-  const openService = useAppStore((s) => s.openService);
   const list = services ?? [];
 
   if (list.length < 2) return null;
@@ -108,7 +107,7 @@ export function ServiceComparisonTable() {
                     <th
                       key={svc.id}
                       className="p-4 text-center min-w-[120px] group cursor-pointer"
-                      onClick={() => openService(svc.slug)}
+                      onClick={() => navigateToService(svc.slug)}
                     >
                       <div className="flex flex-col items-center gap-1">
                         <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">

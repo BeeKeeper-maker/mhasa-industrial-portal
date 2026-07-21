@@ -13,7 +13,7 @@ export const PUT = makeUpdateHandler({
   entityName: "Project",
   include,
   transform: (input) => {
-    const { serviceIds, ...rest } = input as { serviceIds?: string[] } & Record<string, unknown>;
+    const { serviceIds: _serviceIds, ...rest } = input as { serviceIds?: string[] } & Record<string, unknown>;
     return {
       ...rest,
       galleryImages: stringifyArray((input as { galleryImages?: string[] }).galleryImages ?? []),

@@ -45,8 +45,11 @@ export const metadata: Metadata = {
   creator: "Mohd H. Al Marhoon Cont. Est.",
   publisher: "MHASA",
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/hero-industrial.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: "/hero-industrial.png",
   },
   openGraph: {
     type: "website",
@@ -57,13 +60,13 @@ export const metadata: Metadata = {
     title: "MHASA — Engineering Excellence in Pipe Installation",
     description:
       "Leading Saudi contractor for RTR, GRP, GRE, FRP pipe installation, sewer lines, and fiberglass engineering solutions.",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "MHASA" }],
+    images: [{ url: "/hero-industrial.png", width: 1344, height: 768, alt: "MHASA — Engineering Excellence in Pipe Installation" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "MHASA — Engineering Excellence in Pipe Installation",
     description: "Leading Saudi contractor for pipe installation and industrial solutions.",
-    images: ["/og-image.jpg"],
+    images: ["/hero-industrial.png"],
   },
   robots: {
     index: true,
@@ -81,6 +84,7 @@ export const viewport = {
   themeColor: "#0f1e3d",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover" as const,
 };
 
 export default function RootLayout({

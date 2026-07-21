@@ -22,14 +22,12 @@ import {
   SectionHeading, FadeIn, GoldDivider,
 } from "@/components/site/primitives";
 import { useJobs, useJob, useJobApplication } from "@/lib/hooks/use-queries";
-import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
+import { navigateToView, navigateToJob, navigateBack } from "@/lib/store";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export function CareersView() {
-  const selectedSlug = useAppStore((s) => s.selectedJobSlug);
-  if (selectedSlug) return <JobDetail slug={selectedSlug} />;
   return <CareersList />;
 }
 
@@ -202,7 +200,6 @@ function WhyJoinSection() {
 // ============================================================================
 function JobCard({ job, index }: { job: import("@/lib/types").JobDTO; index: number }) {
   const { t, pick } = useLocale();
-  const openJob = useAppStore((s) => s.openJob);
   const title = pick(job.title, job.titleAr) ?? job.title;
 
   return (
@@ -235,7 +232,7 @@ function JobCard({ job, index }: { job: import("@/lib/types").JobDTO; index: num
 
         <div className="mt-6 pt-4 border-t border-border/60">
           <Button
-            onClick={() => openJob(job.slug)}
+            onClick={() => navigateToJob(job.slug)}
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-10"
           >
             {t.actions.applyNow}
@@ -284,14 +281,13 @@ function FilterChip({
 // ============================================================================
 // Job Detail — meta grid + description + requirements + application form.
 // ============================================================================
-function JobDetail({ slug }: { slug: string }) {
+export function JobDetail({ slug }: { slug: string }) {
   const { data: job, isLoading } = useJob(slug);
   const { t, locale, pick } = useLocale();
-  const resetSelection = useAppStore((s) => s.resetSelection);
 
   if (isLoading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center bg-background">
+      <div className="min-h-[60dvh] flex items-center justify-center bg-background">
         <div className="text-muted-foreground text-sm">{t.common.loading}</div>
       </div>
     );
@@ -299,9 +295,9 @@ function JobDetail({ slug }: { slug: string }) {
 
   if (!job) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 bg-background">
+      <div className="min-h-[60dvh] flex flex-col items-center justify-center gap-4 bg-background">
         <p className="text-muted-foreground">{t.common.noResults}</p>
-        <Button onClick={resetSelection} variant="outline">
+        <Button onClick={navigateBack} variant="outline">
           <ChevronLeft className="me-2 h-4 w-4 rtl:rotate-180" />
           {locale === "ar" ? "العودة للوظائف" : "Back to Careers"}
         </Button>
@@ -347,7 +343,7 @@ function JobDetail({ slug }: { slug: string }) {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
-            onClick={resetSelection}
+            onClick={navigateBack}
             className="inline-flex w-fit items-center gap-1.5 text-sm text-white/80 hover:text-gold transition-colors mb-6"
           >
             <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
@@ -754,7 +750,6 @@ function PageHero({
   breadcrumb: string;
 }) {
   const { t } = useLocale();
-  const setView = useAppStore((s) => s.setView);
 
   return (
     <section className="relative py-16 md:py-24 bg-navy text-white overflow-hidden">
@@ -769,7 +764,7 @@ function PageHero({
           transition={{ duration: 0.5 }}
           className="flex items-center gap-2 text-xs text-white/60 mb-6"
         >
-          <button onClick={() => setView("home")} className="hover:text-gold transition-colors">
+          <button onClick={() => navigateToView("home")} className="hover:text-gold transition-colors">
             {t.nav.home}
           </button>
           <ChevronLeft className="h-3.5 w-3.5 rtl:rotate-180" />
@@ -792,7 +787,6 @@ function PageHero({
 // CTA Section.
 // ============================================================================
 function CTASection() {
-  const setView = useAppStore((s) => s.setView);
   const { t, locale } = useLocale();
 
   return (
@@ -815,7 +809,7 @@ function CTASection() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button
               size="lg"
-              onClick={() => setView("contact")}
+              onClick={() => navigateToView("contact")}
               className="bg-gold text-gold-foreground hover:bg-gold/90 font-semibold px-8 h-12 text-base shadow-xl shadow-gold/20"
             >
               {t.actions.getInTouch}

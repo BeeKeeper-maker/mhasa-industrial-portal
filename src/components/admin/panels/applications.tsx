@@ -280,7 +280,7 @@ export function AdminApplications() {
                     <DialogContent className="max-w-3xl max-h-[80vh]">
                       <DialogHeader><DialogTitle>Resume — {app.fullName as string}</DialogTitle></DialogHeader>
                       {(app.resumeUrl as string).startsWith("data:application/pdf") ? (
-                        <iframe src={app.resumeUrl as string} className="w-full h-[70vh] rounded-lg" title="Resume" />
+                        <iframe src={app.resumeUrl as string} className="w-full h-[70dvh] rounded-lg" title="Resume" />
                       ) : (
                         <a href={app.resumeUrl as string} download className="text-primary underline">Download resume</a>
                       )}

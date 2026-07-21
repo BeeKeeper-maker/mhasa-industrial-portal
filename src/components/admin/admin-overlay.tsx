@@ -12,9 +12,9 @@ import { X, Shield, Lock, Loader2, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAppStore } from "@/lib/store";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
 import { toast } from "sonner";
+import { useAppStore } from "@/lib/store";
 
 export function AdminOverlay() {
   const adminOpen = useAppStore((s) => s.adminOpen);

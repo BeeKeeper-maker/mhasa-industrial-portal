@@ -14,9 +14,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useAppStore } from "@/lib/store";
 import { useSearch } from "@/lib/hooks/use-queries";
 import { useLocale } from "@/lib/hooks/use-locale";
+import { useAppStore, navigateToProject, navigateToService, navigateToPost, navigateToJob } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 /** Highlights occurrences of `query` within `text` using <mark> tags. */
@@ -37,10 +37,6 @@ function Highlight({ text, query }: { text: string; query: string }): ReactNode 
 export function SearchDialog() {
   const searchOpen = useAppStore((s) => s.searchOpen);
   const setSearchOpen = useAppStore((s) => s.setSearchOpen);
-  const openProject = useAppStore((s) => s.openProject);
-  const openService = useAppStore((s) => s.openService);
-  const openPost = useAppStore((s) => s.openPost);
-  const openJob = useAppStore((s) => s.openJob);
   const { t, locale } = useLocale();
   const [query, setQuery] = useState("");
 
@@ -66,10 +62,10 @@ export function SearchDialog() {
       results.posts.length > 0 ||
       results.jobs.length > 0);
 
-  const handleProject = (slug: string) => { openProject(slug); setSearchOpen(false); };
-  const handleService = (slug: string) => { openService(slug); setSearchOpen(false); };
-  const handlePost = (slug: string) => { openPost(slug); setSearchOpen(false); };
-  const handleJob = (slug: string) => { openJob(slug); setSearchOpen(false); };
+  const handleProject = (slug: string) => { navigateToProject(slug); setSearchOpen(false); };
+  const handleService = (slug: string) => { navigateToService(slug); setSearchOpen(false); };
+  const handlePost = (slug: string) => { navigateToPost(slug); setSearchOpen(false); };
+  const handleJob = (slug: string) => { navigateToJob(slug); setSearchOpen(false); };
 
   return (
     <Dialog
@@ -100,7 +96,7 @@ export function SearchDialog() {
           )}
         </div>
 
-        <div className="max-h-[60vh] overflow-y-auto p-2">
+        <div className="max-h-[60dvh] overflow-y-auto p-2">
           {!query || query.length < 2 ? (
             <div className="py-16 text-center text-sm text-muted-foreground">
               <Search className="mx-auto h-10 w-10 mb-3 opacity-20" />

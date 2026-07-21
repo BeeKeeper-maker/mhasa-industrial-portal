@@ -24,14 +24,13 @@ import {
 } from "@/components/site/primitives";
 import { BlogCard } from "@/components/site/cards";
 import { useBlogPosts, useBlogPost } from "@/lib/hooks/use-queries";
-import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
+import { navigateToView, navigateBack } from "@/lib/store";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export function NewsView() {
-  const selectedSlug = useAppStore((s) => s.selectedPostSlug);
-  if (selectedSlug) return <PostDetail slug={selectedSlug} />;
+  
   return <NewsList />;
 }
 
@@ -143,16 +142,15 @@ function FilterChip({
 // ============================================================================
 // Post Detail — cover hero + meta + content + tags + share + related.
 // ============================================================================
-function PostDetail({ slug }: { slug: string }) {
+export function PostDetail({ slug }: { slug: string }) {
   const { data: post, isLoading } = useBlogPost(slug);
   const { data: allPosts } = useBlogPosts();
   const { t, locale, pick } = useLocale();
-  const resetSelection = useAppStore((s) => s.resetSelection);
   const [copied, setCopied] = useState(false);
 
   if (isLoading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center bg-background">
+      <div className="min-h-[60dvh] flex items-center justify-center bg-background">
         <div className="text-muted-foreground text-sm">{t.common.loading}</div>
       </div>
     );
@@ -160,9 +158,9 @@ function PostDetail({ slug }: { slug: string }) {
 
   if (!post) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 bg-background">
+      <div className="min-h-[60dvh] flex flex-col items-center justify-center gap-4 bg-background">
         <p className="text-muted-foreground">{t.common.noResults}</p>
-        <Button onClick={resetSelection} variant="outline">
+        <Button onClick={navigateBack} variant="outline">
           <ChevronLeft className="me-2 h-4 w-4 rtl:rotate-180" />
           {locale === "ar" ? "العودة للأخبار" : "Back to News"}
         </Button>
@@ -216,7 +214,7 @@ function PostDetail({ slug }: { slug: string }) {
       <ReadingProgress />
 
       {/* Cover hero */}
-      <section className="relative h-[60vh] min-h-[440px] w-full overflow-hidden bg-navy">
+      <section className="relative h-[60dvh] min-h-[440px] w-full overflow-hidden bg-navy">
         {post.coverImage ? (
           <Image
             src={post.coverImage}
@@ -234,7 +232,7 @@ function PostDetail({ slug }: { slug: string }) {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
-            onClick={resetSelection}
+            onClick={navigateBack}
             className="inline-flex w-fit items-center gap-1.5 text-sm text-white/80 hover:text-gold transition-colors mb-6"
           >
             <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
@@ -365,7 +363,15 @@ function PostDetail({ slug }: { slug: string }) {
                     [&_pre]:bg-navy [&_pre]:text-white [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:my-4
                     [&_img]:rounded-lg [&_img]:my-4"
                 >
-                  <ReactMarkdown components={markdownHeadingComponents}>{content}</ReactMarkdown>
+                  <ReactMarkdown
+                    components={markdownHeadingComponents}
+                    urlTransform={(url) => {
+                      // Security: only allow http, https, mailto, and relative URLs
+                      // Prevents javascript: and data: URL injection via markdown links
+                      if (/^(https?:|mailto:|\/|#)/i.test(url)) return url;
+                      return "#";
+                    }}
+                  >{content}</ReactMarkdown>
                 </article>
               </FadeIn>
 
@@ -389,7 +395,7 @@ function PostDetail({ slug }: { slug: string }) {
 
             {/* Back to news button */}
             <FadeIn delay={0.15} className="mt-10">
-              <Button onClick={resetSelection} variant="outline">
+              <Button onClick={navigateBack} variant="outline">
                 <ChevronLeft className="me-2 h-4 w-4 rtl:rotate-180" />
                 {locale === "ar" ? "كل الأخبار" : "Back to All News"}
               </Button>
@@ -414,7 +420,7 @@ function PostDetail({ slug }: { slug: string }) {
               />
               <Button
                 variant="outline"
-                onClick={resetSelection}
+                onClick={navigateBack}
                 className="border-primary text-primary hover:bg-primary hover:text-primary-foreground self-start md:self-auto font-semibold"
               >
                 {locale === "ar" ? "كل الأخبار" : "All News"}
@@ -451,7 +457,6 @@ function PageHero({
   breadcrumb: string;
 }) {
   const { t } = useLocale();
-  const setView = useAppStore((s) => s.setView);
 
   return (
     <section className="relative py-16 md:py-24 bg-navy text-white overflow-hidden">
@@ -466,7 +471,7 @@ function PageHero({
           transition={{ duration: 0.5 }}
           className="flex items-center gap-2 text-xs text-white/60 mb-6"
         >
-          <button onClick={() => setView("home")} className="hover:text-gold transition-colors">
+          <button onClick={() => navigateToView("home")} className="hover:text-gold transition-colors">
             {t.nav.home}
           </button>
           <ChevronLeft className="h-3.5 w-3.5 rtl:rotate-180" />
@@ -489,7 +494,6 @@ function PageHero({
 // CTA Section.
 // ============================================================================
 function CTASection() {
-  const setView = useAppStore((s) => s.setView);
   const { t, locale } = useLocale();
 
   return (
@@ -512,7 +516,7 @@ function CTASection() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button
               size="lg"
-              onClick={() => setView("contact")}
+              onClick={() => navigateToView("contact")}
               className="bg-gold text-gold-foreground hover:bg-gold/90 font-semibold px-8 h-12 text-base shadow-xl shadow-gold/20"
             >
               <Sparkles className="me-2 h-4 w-4" />
@@ -522,7 +526,7 @@ function CTASection() {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => setView("services")}
+              onClick={() => navigateToView("services")}
               className="border-white/30 bg-white/5 text-white hover:bg-white/15 hover:text-white h-12 px-8 text-base"
             >
               {t.actions.exploreServices}

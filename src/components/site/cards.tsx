@@ -12,14 +12,13 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/site/icon";
 import { useLocale } from "@/lib/hooks/use-locale";
-import { useAppStore } from "@/lib/store";
+import { navigateToService, navigateToProject, navigateToPost } from "@/lib/store";
 import type { ServiceDTO, ProjectDTO, TestimonialDTO, BlogPostDTO } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 // -------- Service Card --------
 export function ServiceCard({ service, index = 0 }: { service: ServiceDTO; index?: number }) {
   const { locale, pick } = useLocale();
-  const openService = useAppStore((s) => s.openService);
 
   return (
     <motion.div
@@ -30,7 +29,7 @@ export function ServiceCard({ service, index = 0 }: { service: ServiceDTO; index
     >
       <Card
         className="group card-lift gradient-border relative h-full overflow-hidden cursor-pointer border-border/60 bg-card"
-        onClick={() => openService(service.slug)}
+        onClick={() => navigateToService(service.slug)}
       >
         {/* Top accent bar */}
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary to-gold opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -77,7 +76,6 @@ export function ProjectCard({
   onCompareToggle?: (id: string) => void;
 }) {
   const { pick } = useLocale();
-  const openProject = useAppStore((s) => s.openProject);
   const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
@@ -90,8 +88,8 @@ export function ProjectCard({
       <Card
         className={`group card-lift image-zoom relative h-full overflow-hidden cursor-pointer border-0 bg-muted/30 p-0 ${
           compareSelected ? "ring-2 ring-gold" : ""
-        }`}
-        onClick={() => compareMode && onCompareToggle ? onCompareToggle(project.id) : openProject(project.slug)}
+        } ${project.isFeatured ? "ring-1 ring-gold/40" : ""}`}
+        onClick={() => compareMode && onCompareToggle ? onCompareToggle(project.id) : navigateToProject(project.slug)}
       >
         {/* Image */}
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
@@ -115,10 +113,15 @@ export function ProjectCard({
           <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/20 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-95" />
 
           {/* Category badge */}
-          <div className="absolute top-4 start-4">
+          <div className="absolute top-4 start-4 flex flex-col gap-1.5">
             <Badge className="bg-gold text-gold-foreground hover:bg-gold font-semibold border-0">
               {project.category}
             </Badge>
+            {project.isFeatured && (
+              <Badge className="bg-navy/90 text-gold border-0 text-[10px] font-bold backdrop-blur-sm">
+                ★ Featured
+              </Badge>
+            )}
           </div>
 
           {/* Content overlay */}
@@ -214,7 +217,6 @@ export function TestimonialCard({ testimonial, index = 0 }: { testimonial: Testi
 // -------- Blog Card --------
 export function BlogCard({ post, index = 0 }: { post: BlogPostDTO; index?: number }) {
   const { pick, locale } = useLocale();
-  const openPost = useAppStore((s) => s.openPost);
   const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
@@ -226,7 +228,7 @@ export function BlogCard({ post, index = 0 }: { post: BlogPostDTO; index?: numbe
     >
       <Card
         className="group card-lift image-zoom h-full overflow-hidden cursor-pointer border-border/60 bg-card"
-        onClick={() => openPost(post.slug)}
+        onClick={() => navigateToPost(post.slug)}
       >
         <div className="relative aspect-[16/9] overflow-hidden bg-muted">
           {/* Shimmer placeholder */}

@@ -22,8 +22,8 @@ import {
   SectionHeading, FadeIn, GoldDivider,
 } from "@/components/site/primitives";
 import { ReadingProgress } from "@/components/site/reading-progress";
-import { useAppStore } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
+import { navigateToView } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 // ============================================================================
@@ -142,7 +142,7 @@ function LegalLayout({
                           variant="outline"
                           size="sm"
                           className="h-9"
-                          onClick={() => useAppStore.getState().setView("home")}
+                          onClick={() => navigateToView("home")}
                         >
                           <ChevronLeft className="h-4 w-4 me-1 rtl:rotate-180" />
                           {t.nav.home}
@@ -175,7 +175,6 @@ function LegalHero({
   icon: typeof FileText;
 }) {
   const { t, locale } = useLocale();
-  const setView = useAppStore((s) => s.setView);
 
   return (
     <section className="relative py-16 md:py-24 bg-navy text-white overflow-hidden">
@@ -191,7 +190,7 @@ function LegalHero({
           transition={{ duration: 0.5 }}
           className="flex items-center gap-2 text-xs text-white/60 mb-6"
         >
-          <button onClick={() => setView("home")} className="hover:text-gold transition-colors">
+          <button onClick={() => navigateToView("home")} className="hover:text-gold transition-colors">
             {t.nav.home}
           </button>
           <ChevronLeft className="h-3.5 w-3.5 rtl:rotate-180" />
@@ -398,7 +397,6 @@ function LegalSectionBlock({
 // Shared CTA — shown at the bottom of both legal documents.
 // ============================================================================
 function LegalCTA() {
-  const setView = useAppStore((s) => s.setView);
   const { t, locale } = useLocale();
 
   return (
@@ -417,7 +415,7 @@ function LegalCTA() {
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Button
               size="lg"
-              onClick={() => setView("contact")}
+              onClick={() => navigateToView("contact")}
               className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8 h-12 text-base shadow-lg shadow-primary/20"
             >
               <Mail className="h-5 w-5 me-2" />
@@ -427,7 +425,7 @@ function LegalCTA() {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => setView("home")}
+              onClick={() => navigateToView("home")}
               className="h-12 px-8 text-base"
             >
               {t.nav.home}

@@ -6,11 +6,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Menu, X, Search, Phone, ChevronDown, Shield, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from "@/components/ui/sheet";
-import { useAppStore, type ViewKey } from "@/lib/store";
+import { useAppStore, navigateToView, type ViewKey } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
 import { useSiteData } from "@/lib/hooks/use-queries";
 import { ThemeToggle } from "@/components/site/theme-toggle";
@@ -19,8 +20,7 @@ import { cn } from "@/lib/utils";
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const view = useAppStore((s) => s.view);
-  const setView = useAppStore((s) => s.setView);
+  const pathname = usePathname();
   const setAdminOpen = useAppStore((s) => s.setAdminOpen);
   const setSearchOpen = useAppStore((s) => s.setSearchOpen);
   const { t, locale, toggleLocale } = useLocale();
@@ -47,8 +47,13 @@ export function Header() {
   ];
 
   const handleNav = (key: ViewKey) => {
-    setView(key);
+    navigateToView(key);
     setMobileOpen(false);
+  };
+
+  const isActive = (key: ViewKey) => {
+    const target = key === "home" ? "/" : `/${key}`;
+    return pathname === target;
   };
 
   return (
@@ -123,7 +128,7 @@ export function Header() {
                   onClick={() => handleNav(item.key)}
                   className={cn(
                     "nav-underline px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary transition-colors",
-                    view === item.key && "active text-primary"
+                    isActive(item.key) && "active text-primary"
                   )}
                 >
                   {item.label}
@@ -193,7 +198,7 @@ export function Header() {
                           onClick={() => handleNav(item.key)}
                           className={cn(
                             "flex w-full items-center justify-between rounded-lg px-4 py-3 text-sm font-medium transition-colors",
-                            view === item.key
+                            isActive(item.key)
                               ? "bg-primary/5 text-primary"
                               : "text-foreground hover:bg-muted"
                           )}
