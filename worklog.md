@@ -1308,3 +1308,39 @@ Task: Restore all recent work, sync with GitHub, push
 - src/app/global-error.tsx ✓
 - src/app/loading.tsx ✓
 - 16 route pages ✓
+
+---
+Task ID: ADMIN-ROUTE (Admin URL Migration)
+Agent: Principal Architect
+Task: Migrate admin from overlay to proper /admin route
+
+## Status
+- TypeScript: 0 errors ✓
+- ESLint: 0 errors, 0 warnings ✓
+- Home: HTTP 200 ✓, Admin: HTTP 200 ✓
+- GitHub: Pushed (commit 31d8a74)
+
+## Completed
+1. Created `/admin` route with separate layout (no public Header/Footer/overlays)
+2. Created `src/app/admin/page.tsx` — login gate (email/password) → AdminDashboard
+3. Created `src/components/admin/session-provider.tsx` — client wrapper for SessionProvider
+4. Deleted `admin-overlay.tsx` (replaced by /admin route)
+5. Removed AdminOverlay from RootLayout
+6. Updated header mobile drawer + footer Admin links to `<a href="/admin">` / `<Link href="/admin">`
+7. Updated NextAuth `pages.signIn` to `/admin`
+8. Removed `adminOpen`/`setAdminOpen` from Zustand store
+9. Added NEXTAUTH_SECRET + NEXTAUTH_URL to .env
+10. Admin layout has `robots: { index: false, follow: false }` — not indexed by search engines
+
+## Admin Flow
+1. User clicks "Admin" in header/footer → navigates to `/admin`
+2. If not logged in → shows login form (email + password)
+3. On successful login → shows AdminDashboard with all CMS panels
+4. Admin top bar has "View Site" link (back to `/`) and "Sign Out" button
+5. Admin route has its own layout — no public header/footer/floating UI
+
+## Architecture
+- `/admin/layout.tsx` — Server Component with AdminSessionProvider wrapper + Toaster
+- `/admin/page.tsx` — Client Component with useSession check (login gate → dashboard)
+- `/admin` is NOT indexed by search engines (robots: noindex, nofollow)
+- Admin API routes still protected by proxy.ts + requireAdmin()
