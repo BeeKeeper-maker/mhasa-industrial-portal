@@ -8,13 +8,20 @@ if (process.env.VERCEL) {
   const destPath = '/tmp/custom.db'
   try {
     if (fs.existsSync(sourcePath)) {
-      // Copy to /tmp because Vercel root is read-only, preventing SQLite WAL creation
       fs.copyFileSync(sourcePath, destPath)
       dbUrl = 'file:/tmp/custom.db'
       console.log('Copied database to /tmp/custom.db for Vercel')
     }
   } catch (e) {
     console.error('Failed to copy db to /tmp', e)
+  }
+} else {
+  // Ensure local db URL points to valid path if absolute path is invalid
+  const localDbPath = path.join(process.cwd(), 'db', 'custom.db')
+  if (dbUrl?.startsWith('file:/') && !fs.existsSync(dbUrl.replace('file:', ''))) {
+    dbUrl = `file:${localDbPath}`
+  } else if (!dbUrl && fs.existsSync(localDbPath)) {
+    dbUrl = `file:${localDbPath}`
   }
 }
 

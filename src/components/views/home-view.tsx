@@ -50,8 +50,8 @@ function HeroSection() {
   const { t, pick } = useLocale();
   const heroes = siteData?.heroes ?? [];
   const [index, setIndex] = useState(0);
-  const { y: heroLayer1Y } = useParallax(60);
-  const { y: heroLayer2Y } = useParallax(40);
+  const { ref: heroLayer1Ref, y: heroLayer1Y } = useParallax(60);
+  const { ref: heroLayer2Ref, y: heroLayer2Y } = useParallax(40);
 
   useEffect(() => {
     if (heroes.length <= 1) return;
@@ -61,8 +61,22 @@ function HeroSection() {
 
   if (heroes.length === 0) {
     return (
-      <section className="relative flex min-h-[70dvh] items-center justify-center bg-navy">
-        <div className="text-center text-white p-8">
+      <section className="relative flex min-h-[70dvh] items-center justify-center bg-navy overflow-hidden">
+        <motion.div
+          ref={heroLayer1Ref}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.15 }}
+          className="absolute top-20 end-10 h-32 w-32 rounded-full border-2 border-gold/30 pointer-events-none"
+          style={{ y: heroLayer1Y }}
+        />
+        <motion.div
+          ref={heroLayer2Ref}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.1 }}
+          className="absolute bottom-32 start-10 h-24 w-24 rounded-2xl border-2 border-white/20 rotate-12 pointer-events-none"
+          style={{ y: heroLayer2Y }}
+        />
+        <div className="text-center text-white p-8 z-10">
           <h1 className="text-4xl md:text-6xl font-bold font-display">{t.common.tagline}</h1>
         </div>
       </section>
@@ -98,6 +112,7 @@ function HeroSection() {
 
       {/* Decorative parallax depth layers */}
       <motion.div
+        ref={heroLayer1Ref}
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.15 }}
         transition={{ delay: 0.5, duration: 1 }}
@@ -105,6 +120,7 @@ function HeroSection() {
         style={{ y: heroLayer1Y }}
       />
       <motion.div
+        ref={heroLayer2Ref}
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.1 }}
         transition={{ delay: 0.7, duration: 1 }}
