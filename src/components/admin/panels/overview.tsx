@@ -6,9 +6,11 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Phone, Users, FileText, TrendingUp, ArrowUpRight, Mail, Calendar } from "lucide-react";
+import Link from "next/link";
+import { Phone, Users, FileText, TrendingUp, ArrowUpRight, Mail, Calendar, Briefcase, Building2, Settings } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   LeadsOverTimeChart, ApplicationsByStatusChart, LeadsByStatusChart,
   ContentCountsGrid, TopCategoriesChart,
@@ -71,6 +73,15 @@ export function AdminOverview() {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-2">
+        <Link href="/admin/leads"><Button variant="outline" size="sm" className="gap-1.5"><Phone className="h-3.5 w-3.5" />View Leads</Button></Link>
+        <Link href="/admin/services"><Button variant="outline" size="sm" className="gap-1.5"><Briefcase className="h-3.5 w-3.5" />Manage Services</Button></Link>
+        <Link href="/admin/projects"><Button variant="outline" size="sm" className="gap-1.5"><Building2 className="h-3.5 w-3.5" />Manage Projects</Button></Link>
+        <Link href="/admin/blog"><Button variant="outline" size="sm" className="gap-1.5"><FileText className="h-3.5 w-3.5" />Write Blog Post</Button></Link>
+        <Link href="/admin/settings"><Button variant="outline" size="sm" className="gap-1.5"><Settings className="h-3.5 w-3.5" />Site Settings</Button></Link>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

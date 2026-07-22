@@ -143,10 +143,31 @@ export function ResourceManager({ resource, title }: ResourceManagerProps) {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="p-4">
+              <div className="mb-2 aspect-video rounded-lg bg-muted/40 animate-pulse" />
+              <div className="h-4 w-3/4 rounded bg-muted/40 animate-pulse mb-2" />
+              <div className="h-3 w-1/2 rounded bg-muted/40 animate-pulse" />
+            </Card>
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
-        <Card className="p-12 text-center text-muted-foreground">
-          {search ? "No matching records" : "No records yet. Click 'Add New' to create one."}
+        <Card className="p-12 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60">
+              <Plus className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <p className="text-muted-foreground">
+              {search ? `No records matching "${search}"` : "No records yet."}
+            </p>
+            {!search && (
+              <Button onClick={handleNew} size="sm" variant="outline">
+                <Plus className="h-4 w-4" />
+                Create First Record
+              </Button>
+            )}
+          </div>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -211,8 +232,16 @@ export function ResourceManager({ resource, title }: ResourceManagerProps) {
       <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editing ? `Edit ${title.slice(0, -1)}` : `New ${title.slice(0, -1)}`}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              {editing ? <Edit className="h-5 w-5 text-gold" /> : <Plus className="h-5 w-5 text-gold" />}
+              {editing ? `Edit ${title.slice(0, -1)}` : `New ${title.slice(0, -1)}`}
+            </DialogTitle>
           </DialogHeader>
+          {save.isError && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+              <strong>Error:</strong> {save.error?.message ?? "Failed to save. Please try again."}
+            </div>
+          )}
           <ResourceForm
             config={config}
             initial={editing}
