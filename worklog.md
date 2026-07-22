@@ -1620,3 +1620,39 @@ Task: Enhance admin UI/UX, loading states, empty states, error display, quick ac
 - **View prop refactor**: Views still fetch data client-side via hooks. Can pass server-fetched data as props to eliminate duplicate fetches.
 - **Header `<Link>` optimization**: Public site header uses `navigateToView()` (window.location.href). Can migrate to `<Link>` for client-side navigation.
 - **Admin search click-to-edit**: AdminSearch finds records but doesn't navigate to edit form. Can add click handler.
+
+---
+Task ID: NAV-LINK (Client-Side Navigation Migration)
+Agent: webDevReview cron
+Task: Migrate header/footer from window.location to <Link> for client-side routing
+
+## Current Project Status
+- **TypeScript**: 0 errors ✓
+- **ESLint**: 0 errors, 0 warnings ✓
+- **GitHub**: Pushed (commit 2ac1a5a)
+
+## Completed Modifications
+
+### Header Navigation → <Link>
+- Logo: `<button onClick={navigateToView}>` → `<Link href="/">`
+- Desktop nav items: `<button onClick={navigateToView}>` → `<Link href={navPath(key)}>`
+- Mobile drawer nav items: same `<Link>` migration
+- CTA "Request Quotation" button: `<Button onClick>` → `<Button asChild><Link>`
+- Admin link: already using `<a href="/admin">` (kept as is — admin is a separate layout)
+
+### Footer Navigation → <Link>
+- CTA "Request Quotation" button: `<button onClick={navigateToView}>` → `<Link href="/contact">`
+- Quick links (About, Projects, Careers, News, Gallery, FAQ): `<button onClick>` → `<Link href>`
+- Service links: `<button onClick={navigateToService}>` → `<Link href="/services/${slug}">`
+- Privacy Policy / Terms: `<button onClick={navigateToView}>` → `<Link href>`
+
+### Benefits
+- **No full page reload** — instant navigation with client-side routing
+- **No white flash** between page transitions
+- **Better UX** — feels like a SPA while maintaining proper URL routing
+- **SEO preserved** — URLs still change, server-rendered content still available
+
+## Unresolved Issues / Next-Phase Recommendations
+- **Cards still use navigateToView/navigateToProject** — can migrate to <Link> for consistency
+- **View prop refactor** — views still fetch data client-side via hooks
+- **Admin search click-to-navigate** — can add click handler to navigate to edit page
