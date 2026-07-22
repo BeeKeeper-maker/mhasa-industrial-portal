@@ -12,11 +12,18 @@ export const PUT = makeUpdateHandler({
   schema: blogPostSchema,
   entityName: "BlogPost",
   include,
-  transform: (input) => ({
-    ...(input as Record<string, unknown>),
-    tags: stringifyArray((input as { tags?: string[] }).tags ?? []),
-    publishedAt: (input as { status?: string }).status === "PUBLISHED" ? new Date() : null,
-  }),
+  transform: (input) => {
+    const { publishedAt, ...rest } = input as { publishedAt?: string | null } & Record<string, unknown>;
+    return {
+      ...rest,
+      tags: stringifyArray((input as { tags?: string[] }).tags ?? []),
+      // Only set publishedAt to now if switching to PUBLISHED and no existing date
+      // If already published, keep the existing date (don't pass publishedAt = let Prisma keep it)
+      ...(publishedAt === null && (input as { status?: string }).status === "PUBLISHED"
+        ? { publishedAt: new Date() }
+        : {}),
+    };
+  },
 });
 
 export const DELETE = makeDeleteHandler({ model: db.blogPost, schema: blogPostSchema, entityName: "BlogPost" });

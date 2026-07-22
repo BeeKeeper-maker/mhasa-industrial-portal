@@ -29,7 +29,7 @@ interface StatsData {
 }
 
 async function fetchStats(days: number = 30): Promise<StatsData | null> {
-  const res = await fetch(`/api/admin/stats?days=${days}`);
+  const res = await fetch(`/api/admin/stats/analytics?days=${days}`);
   const json = await res.json();
   return json.success ? json.data : null;
 }
