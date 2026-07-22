@@ -1685,3 +1685,38 @@ Task: Fix site settings page null display bug + add error/success banners
 - Save button works (API endpoint properly filters fields)
 - Error/success feedback visible to user
 - TypeScript: 0 errors, ESLint: 0 errors, 0 warnings
+
+---
+Task ID: SETTINGS-CRASH-FIX (items.filter is not a function)
+Agent: Principal Architect
+Task: Fix admin settings page crash — items.filter is not a function
+
+## Status
+- TypeScript: 0 errors ✓
+- ESLint: 0 errors, 0 warnings ✓
+- Routes: /admin/settings (200), /admin/services (200) ✓
+- GitHub: Pushed (commit 9c15b15)
+
+## Root Cause
+When `resource === "settings"`, the API endpoint `/api/admin/settings` returns a single object (not an array). The `useQuery` fetched it as `json.data` (an object), and then `items.filter(...)` crashed because JavaScript objects don't have a `.filter()` method.
+
+The settings/activity early-return was placed AFTER the `items.filter()` call — so the filter ran before the component could bail out to `<SettingsManager />`.
+
+## Fix
+1. **Moved early-return BEFORE items.filter()** — settings/activity now bail out before any array operations
+2. **Added Array.isArray() guard** — `const itemsArray = Array.isArray(items) ? items : []` as defense-in-depth
+3. **All subsequent code uses itemsArray** — `filtered`, `itemsArray.length`, etc.
+4. **Removed duplicate config null-check** — was already done in the earlier block
+
+## Code Flow (Fixed)
+```
+ResourceManager("settings"):
+  1. useQuery fetches /api/admin/settings → returns {object} (not array)
+  2. resource === "settings" → return <SettingsManager /> ✓ (BEFORE any .filter call)
+  
+ResourceManager("services"):
+  1. useQuery fetches /api/admin/services → returns [{...}, {...}] (array)
+  2. resource !== "settings" → continue
+  3. Array.isArray(items) → true → itemsArray = items
+  4. itemsArray.filter() → works ✓
+```
