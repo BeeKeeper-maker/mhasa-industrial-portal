@@ -19,6 +19,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { resourceConfigs, type ResourceKey } from "@/components/admin/resource-configs";
 
@@ -247,7 +250,19 @@ function ResourceForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(form);
+    // Clean form data before sending: remove id, convert empty strings to null
+    const cleanData: Record<string, unknown> = {};
+    Object.entries(form).forEach(([key, value]) => {
+      if (key === "id") return; // Don't send id in body
+      if (value === "") {
+        cleanData[key] = null;
+      } else if (typeof value === "string" && value === "undefined") {
+        cleanData[key] = null;
+      } else {
+        cleanData[key] = value;
+      }
+    });
+    onSubmit(cleanData);
   };
 
   return (
@@ -292,6 +307,20 @@ function ResourceForm({
                   onChange={(v) => update(field.name, v)}
                   placeholder={field.placeholder ?? "Add item…"}
                 />
+              ) : field.type === "select" ? (
+                <Select
+                  value={String(form[field.name] ?? field.defaultValue ?? "")}
+                  onValueChange={(v) => update(field.name, v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={field.placeholder ?? "Select…"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(field.options ?? []).map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               ) : field.type === "image" ? (
                 <ImageUploadField
                   value={String(form[field.name] ?? "")}

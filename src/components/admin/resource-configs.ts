@@ -6,12 +6,13 @@
 export interface FieldConfig {
   name: string;
   label: string;
-  type: "text" | "textarea" | "boolean" | "number" | "email" | "url" | "array" | "image";
+  type: "text" | "textarea" | "boolean" | "number" | "email" | "url" | "array" | "image" | "select";
   required?: boolean;
   fullWidth?: boolean;
   rows?: number;
   placeholder?: string;
   defaultValue?: unknown;
+  options?: { value: string; label: string }[];
 }
 
 export interface ResourceConfig {
@@ -88,7 +89,7 @@ export const resourceConfigs: Partial<Record<ResourceKey, ResourceConfig>> = {
       { name: "excerpt", label: "Excerpt", type: "textarea", rows: 2, fullWidth: true },
       { name: "content", label: "Content (Markdown)", type: "textarea", rows: 12, required: true, fullWidth: true },
       { name: "tags", label: "Tags", type: "array", fullWidth: true, placeholder: "Add a tag…" },
-      { name: "status", label: "Status", type: "text", defaultValue: "DRAFT", placeholder: "DRAFT or PUBLISHED" },
+      { name: "status", label: "Status", type: "select", defaultValue: "DRAFT", options: [{ value: "DRAFT", label: "Draft" }, { value: "PUBLISHED", label: "Published" }] },
     ],
   },
   team: {
@@ -176,7 +177,7 @@ export const resourceConfigs: Partial<Record<ResourceKey, ResourceConfig>> = {
       { name: "description", label: "Description", type: "textarea", rows: 5, required: true, fullWidth: true },
       { name: "descriptionAr", label: "Description (Arabic)", type: "textarea", rows: 5, fullWidth: true },
       { name: "requirements", label: "Requirements", type: "array", fullWidth: true, placeholder: "Add a requirement…" },
-      { name: "status", label: "Status", type: "text", defaultValue: "OPEN" },
+      { name: "status", label: "Status", type: "select", defaultValue: "OPEN", options: [{ value: "OPEN", label: "Open" }, { value: "CLOSED", label: "Closed" }] },
     ],
   },
   faqs: {

@@ -1,11 +1,30 @@
 // ============================================================================
 // Zod Validation Schemas
 // Single source of truth for request validation on both client & server.
+// All image fields accept both URLs and relative paths (/uploads/...).
+// All number fields use coerce to accept string inputs from HTML forms.
 // ============================================================================
 
 import { z } from "zod";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+// Accept URLs (https://...) OR relative paths (/uploads/...) OR empty string
+const urlString = z.string()
+  .refine(
+    (val) => val === "" || val.startsWith("/") || val.startsWith("http://") || val.startsWith("https://") || val.startsWith("data:"),
+    "Must be a valid URL or relative path"
+  )
+  .optional()
+  .nullable()
+  .or(z.literal(""));
+
+// Coerce string to number for HTML form inputs
+const num = z.coerce.number().optional().nullable();
+const numDefault = (def: number) => z.coerce.number().int().default(def);
+
+// Coerce to boolean (handles true/false/"true"/"false"/0/1)
+const bool = z.coerce.boolean().default(true);
 
 export const serviceSchema = z.object({
   slug: z.string().regex(slugRegex, "Invalid slug format"),
@@ -16,11 +35,11 @@ export const serviceSchema = z.object({
   description: z.string().min(10),
   descriptionAr: z.string().optional().nullable(),
   icon: z.string().optional().nullable(),
-  imageUrl: z.string().url().optional().nullable().or(z.literal("")),
+  imageUrl: urlString,
   features: z.array(z.string()).default([]),
-  sortOrder: z.number().int().default(0),
-  isFeatured: z.boolean().default(false),
-  isActive: z.boolean().default(true),
+  sortOrder: numDefault(0),
+  isFeatured: bool.default(false),
+  isActive: bool.default(true),
 });
 
 export const projectSchema = z.object({
@@ -30,17 +49,18 @@ export const projectSchema = z.object({
   clientName: z.string().min(2),
   category: z.string().min(2),
   location: z.string().optional().nullable(),
-  value: z.number().nonnegative().optional().nullable(),
+  value: num,
   currency: z.string().default("SAR"),
   startDate: z.string().optional().nullable(),
   completionDate: z.string().optional().nullable(),
   description: z.string().min(10),
   descriptionAr: z.string().optional().nullable(),
-  imageUrl: z.string().url().optional().nullable().or(z.literal("")),
+  imageUrl: urlString,
   galleryImages: z.array(z.string()).default([]),
-  beforeImage: z.string().url().optional().nullable().or(z.literal("")),
-  afterImage: z.string().url().optional().nullable().or(z.literal("")),
-  isFeatured: z.boolean().default(false),
+  beforeImage: urlString,
+  afterImage: urlString,
+  isFeatured: bool.default(false),
+  isActive: bool.default(true),
   serviceIds: z.array(z.string()).default([]),
 });
 
@@ -52,7 +72,7 @@ export const blogPostSchema = z.object({
   excerptAr: z.string().optional().nullable(),
   content: z.string().min(10),
   contentAr: z.string().optional().nullable(),
-  coverImage: z.string().url().optional().nullable().or(z.literal("")),
+  coverImage: urlString,
   category: z.string().default("Company Updates"),
   tags: z.array(z.string()).default([]),
   status: z.enum(["DRAFT", "PUBLISHED"]).default("DRAFT"),
@@ -66,12 +86,12 @@ export const teamMemberSchema = z.object({
   designationAr: z.string().optional().nullable(),
   bio: z.string().optional().nullable(),
   bioAr: z.string().optional().nullable(),
-  imageUrl: z.string().url().optional().nullable().or(z.literal("")),
-  linkedinUrl: z.string().url().optional().nullable().or(z.literal("")),
+  imageUrl: urlString,
+  linkedinUrl: urlString,
   email: z.string().email().optional().nullable().or(z.literal("")),
   phone: z.string().optional().nullable(),
-  sortOrder: z.number().int().default(0),
-  isActive: z.boolean().default(true),
+  sortOrder: numDefault(0),
+  isActive: bool.default(true),
 });
 
 export const testimonialSchema = z.object({
@@ -81,30 +101,30 @@ export const testimonialSchema = z.object({
   company: z.string().optional().nullable(),
   content: z.string().min(10),
   contentAr: z.string().optional().nullable(),
-  rating: z.number().int().min(1).max(5).default(5),
-  avatarUrl: z.string().url().optional().nullable().or(z.literal("")),
-  sortOrder: z.number().int().default(0),
-  isActive: z.boolean().default(true),
+  rating: numDefault(5),
+  avatarUrl: urlString,
+  sortOrder: numDefault(0),
+  isActive: bool.default(true),
 });
 
 export const galleryItemSchema = z.object({
   title: z.string().min(2),
   titleAr: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
-  imageUrl: z.string().url().optional().nullable().or(z.literal("")),
+  imageUrl: urlString,
   category: z.string().default("Projects"),
-  sortOrder: z.number().int().default(0),
-  isActive: z.boolean().default(true),
+  sortOrder: numDefault(0),
+  isActive: bool.default(true),
 });
 
 export const clientSchema = z.object({
   name: z.string().min(2),
   nameAr: z.string().optional().nullable(),
-  logoUrl: z.string().url().optional().nullable().or(z.literal("")),
+  logoUrl: urlString,
   industry: z.string().optional().nullable(),
-  websiteUrl: z.string().url().optional().nullable().or(z.literal("")),
-  sortOrder: z.number().int().default(0),
-  isActive: z.boolean().default(true),
+  websiteUrl: urlString,
+  sortOrder: numDefault(0),
+  isActive: bool.default(true),
 });
 
 export const jobSchema = z.object({
@@ -130,7 +150,7 @@ export const jobApplicationSchema = z.object({
   phone: z.string().min(6),
   coverLetter: z.string().optional().nullable(),
   resumeUrl: z.string().optional().nullable(),
-  portfolioUrl: z.string().url().optional().nullable().or(z.literal("")),
+  portfolioUrl: urlString,
 });
 
 export const contactLeadSchema = z.object({
@@ -145,7 +165,6 @@ export const contactLeadSchema = z.object({
     .optional()
     .nullable(),
   attachmentUrl: z.string().optional().nullable(),
-  // honeypot — must be empty
   website: z.string().max(0).optional(),
 });
 
@@ -155,8 +174,8 @@ export const faqSchema = z.object({
   answer: z.string().min(10),
   answerAr: z.string().optional().nullable(),
   category: z.string().default("General"),
-  sortOrder: z.number().int().default(0),
-  isActive: z.boolean().default(true),
+  sortOrder: numDefault(0),
+  isActive: bool.default(true),
 });
 
 export const heroSlideSchema = z.object({
@@ -164,22 +183,22 @@ export const heroSlideSchema = z.object({
   titleAr: z.string().optional().nullable(),
   subtitle: z.string().optional().nullable(),
   subtitleAr: z.string().optional().nullable(),
-  imageUrl: z.string().url().optional().nullable().or(z.literal("")),
+  imageUrl: urlString,
   ctaText: z.string().optional().nullable(),
   ctaTextAr: z.string().optional().nullable(),
   ctaLink: z.string().optional().nullable(),
-  sortOrder: z.number().int().default(0),
-  isActive: z.boolean().default(true),
+  sortOrder: numDefault(0),
+  isActive: bool.default(true),
 });
 
 export const statSchema = z.object({
   label: z.string().min(2),
   labelAr: z.string().optional().nullable(),
-  value: z.number().int().nonnegative(),
+  value: z.coerce.number().int().nonnegative(),
   suffix: z.string().optional().nullable(),
   icon: z.string().optional().nullable(),
-  sortOrder: z.number().int().default(0),
-  isActive: z.boolean().default(true),
+  sortOrder: numDefault(0),
+  isActive: bool.default(true),
 });
 
 export const loginSchema = z.object({
