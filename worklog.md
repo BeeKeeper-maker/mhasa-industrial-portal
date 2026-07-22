@@ -1656,3 +1656,32 @@ Task: Migrate header/footer from window.location to <Link> for client-side routi
 - **Cards still use navigateToView/navigateToProject** — can migrate to <Link> for consistency
 - **View prop refactor** — views still fetch data client-side via hooks
 - **Admin search click-to-navigate** — can add click handler to navigate to edit page
+
+---
+Task ID: SETTINGS-FIX (Settings Page Bug Fix)
+Agent: webDevReview cron
+Task: Fix site settings page null display bug + add error/success banners
+
+## Current Project Status
+- **TypeScript**: 0 errors ✓
+- **ESLint**: 0 errors, 0 warnings ✓
+- **GitHub**: Pushed (commit 3be5e6b)
+
+## Completed Modifications
+
+### Settings Page Null Display Bug (FIXED)
+**Problem**: Settings form fields displayed "null" in input boxes when the database value was `null`.
+**Root cause**: Used `String(form[f.name] ?? "")` — the `??` operator only catches `undefined`, not `null`. When a field is `null` in the DB, `String(null)` returns `"null"`.
+**Fix**: Changed to `form[f.name] == null ? "" : String(form[f.name])` — the `== null` check catches both `null` and `undefined`.
+
+### Error/Success Banners (ADDED)
+- **Error banner**: Red border + message when save fails (shows `save.error?.message`)
+- **Success banner**: Green border + "Settings saved successfully" when save succeeds
+- Both auto-dismiss on next action
+
+## Verification
+- Settings page loads correctly (HTTP 200)
+- Form fields show empty string for null values (not "null")
+- Save button works (API endpoint properly filters fields)
+- Error/success feedback visible to user
+- TypeScript: 0 errors, ESLint: 0 errors, 0 warnings
