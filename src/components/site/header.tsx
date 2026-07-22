@@ -6,12 +6,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Menu, X, Search, Phone, ChevronDown, Shield, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from "@/components/ui/sheet";
-import { useAppStore, navigateToView, type ViewKey } from "@/lib/store";
+import { useAppStore, type ViewKey } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
 import { useSiteData } from "@/lib/hooks/use-queries";
 import { ThemeToggle } from "@/components/site/theme-toggle";
@@ -45,10 +46,11 @@ export function Header() {
     { key: "contact", label: t.nav.contact },
   ];
 
-  const handleNav = (key: ViewKey) => {
-    navigateToView(key);
+  const handleNav = (_key: ViewKey) => {
     setMobileOpen(false);
   };
+
+  const navPath = (key: ViewKey) => key === "home" ? "/" : `/${key}`;
 
   const isActive = (key: ViewKey) => {
     const target = key === "home" ? "/" : `/${key}`;
@@ -101,7 +103,8 @@ export function Header() {
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex h-16 md:h-20 items-center justify-between gap-4">
             {/* Logo */}
-            <button
+            <Link
+              href="/"
               onClick={() => handleNav("home")}
               className="flex items-center gap-3 group flex-shrink-0"
             >
@@ -117,13 +120,14 @@ export function Header() {
                   {locale === "ar" ? "مؤسسة محمد المرحون" : "Al Marhoon Cont. Est."}
                 </span>
               </div>
-            </button>
+            </Link>
 
             {/* Desktop nav */}
             <nav className="hidden xl:flex items-center gap-1">
               {navItems.map((item) => (
-                <button
+                <Link
                   key={item.key}
+                  href={navPath(item.key)}
                   onClick={() => handleNav(item.key)}
                   className={cn(
                     "nav-underline px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary transition-colors",
@@ -131,7 +135,7 @@ export function Header() {
                   )}
                 >
                   {item.label}
-                </button>
+                </Link>
               ))}
             </nav>
 
@@ -160,11 +164,13 @@ export function Header() {
               </Button>
 
               <Button
-                onClick={() => handleNav("contact")}
+                asChild
                 className="hidden md:inline-flex bg-gold text-gold-foreground hover:bg-gold/90 font-semibold shadow-md shadow-gold/20"
                 size="sm"
               >
-                {t.actions.requestQuote}
+                <Link href="/contact" onClick={() => handleNav("contact")}>
+                  {t.actions.requestQuote}
+                </Link>
               </Button>
 
               {/* Mobile menu */}
@@ -192,8 +198,9 @@ export function Header() {
                     </div>
                     <nav className="flex-1 overflow-y-auto p-3">
                       {navItems.map((item) => (
-                        <button
+                        <Link
                           key={item.key}
+                          href={navPath(item.key)}
                           onClick={() => handleNav(item.key)}
                           className={cn(
                             "flex w-full items-center justify-between rounded-lg px-4 py-3 text-sm font-medium transition-colors",
@@ -204,15 +211,17 @@ export function Header() {
                         >
                           {item.label}
                           <ChevronDown className="h-4 w-4 -rotate-90 opacity-50 rtl:rotate-90" />
-                        </button>
+                        </Link>
                       ))}
                     </nav>
                     <div className="border-t border-border p-4 space-y-2">
                       <Button
-                        onClick={() => { handleNav("contact"); }}
+                        asChild
                         className="w-full bg-gold text-gold-foreground hover:bg-gold/90 font-semibold"
                       >
-                        {t.actions.requestQuote}
+                        <Link href="/contact" onClick={() => handleNav("contact")}>
+                          {t.actions.requestQuote}
+                        </Link>
                       </Button>
                       <div className="flex gap-2">
                         <Button

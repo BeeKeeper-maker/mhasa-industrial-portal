@@ -6,7 +6,8 @@
 "use client";
 
 import { Phone, Mail, MapPin, Linkedin, Facebook, Instagram, Youtube, Download, Shield } from "lucide-react";
-import { navigateToView, navigateToService, type ViewKey } from "@/lib/store";
+import Link from "next/link";
+import { type ViewKey } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
 import { useSiteData } from "@/lib/hooks/use-queries";
 import { useServices } from "@/lib/hooks/use-queries";
@@ -49,12 +50,12 @@ export function Footer() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3 flex-shrink-0">
-              <button
-                onClick={() => navigateToView("contact")}
+              <Link
+                href="/contact"
                 className="inline-flex items-center gap-2 rounded-lg bg-gold px-6 py-3 text-sm font-semibold text-gold-foreground hover:bg-gold/90 transition-colors shadow-lg shadow-gold/20"
               >
                 {t.actions.requestQuote}
-              </button>
+              </Link>
               {settings?.phonePrimary && (
                 <a
                   href={`tel:${settings.phonePrimary}`}
@@ -114,12 +115,12 @@ export function Footer() {
             <ul className="space-y-2.5">
               {quickLinks.map((link) => (
                 <li key={link.key}>
-                  <button
-                    onClick={() => navigateToView(link.key)}
+                  <Link
+                    href={link.key === "home" ? "/" : `/${link.key}`}
                     className="text-sm text-white/60 hover:text-gold transition-colors text-start"
                   >
                     {link.label}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -133,12 +134,12 @@ export function Footer() {
             <ul className="space-y-2.5">
               {(services ?? []).slice(0, 6).map((svc) => (
                 <li key={svc.id}>
-                  <button
-                    onClick={() => navigateToService(svc.slug)}
+                  <Link
+                    href={`/services/${svc.slug}`}
                     className="text-sm text-white/60 hover:text-gold transition-colors text-start line-clamp-1"
                   >
                     {pick(svc.title, svc.titleAr) ?? svc.title}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -208,12 +209,12 @@ export function Footer() {
             <span>{t.common.rights}.</span>
           </div>
           <div className="flex items-center gap-4">
-            <button onClick={() => navigateToView("privacy")} className="hover:text-gold transition-colors">
+            <Link href="/privacy" className="hover:text-gold transition-colors">
               {t.common.privacyPolicy}
-            </button>
-            <button onClick={() => navigateToView("terms")} className="hover:text-gold transition-colors">
+            </Link>
+            <Link href="/terms" className="hover:text-gold transition-colors">
               {t.common.terms}
-            </button>
+            </Link>
             <a
               href="/admin"
               className="inline-flex items-center gap-1 hover:text-gold transition-colors"
