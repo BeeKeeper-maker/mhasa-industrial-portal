@@ -1,10 +1,12 @@
 // ============================================================================
-// Admin Layout — separate from public site (no Header/Footer/overlays).
-// Uses a client wrapper for SessionProvider.
+// Admin Layout — wraps all /admin/* routes.
+// Provides SessionProvider + AdminDashboard shell (sidebar + topbar).
+// Does NOT include public Header/Footer (those are in (public)/layout.tsx).
 // ============================================================================
 
 import { Toaster } from "@/components/ui/sonner";
 import { AdminSessionProvider } from "@/components/admin/session-provider";
+import { AdminDashboard } from "@/components/admin/admin-dashboard";
 
 export const metadata = {
   title: "Admin Dashboard | MHASA",
@@ -19,9 +21,9 @@ export default function AdminLayout({
 }) {
   return (
     <AdminSessionProvider>
-      <div className="min-h-screen bg-muted/20">
+      <AdminDashboard>
         {children}
-      </div>
+      </AdminDashboard>
       <Toaster richColors position="top-center" />
     </AdminSessionProvider>
   );
