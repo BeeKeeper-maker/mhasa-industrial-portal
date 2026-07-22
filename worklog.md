@@ -1344,3 +1344,37 @@ Task: Migrate admin from overlay to proper /admin route
 - `/admin/page.tsx` — Client Component with useSession check (login gate → dashboard)
 - `/admin` is NOT indexed by search engines (robots: noindex, nofollow)
 - Admin API routes still protected by proxy.ts + requireAdmin()
+
+---
+Task ID: ADMIN-FIX (Admin Full-Screen + Image Upload + Settings Fix)
+Agent: Principal Architect
+Task: Fix admin dashboard layout, add image upload, fix settings/errors
+
+## Status
+- TypeScript: 0 errors ✓
+- ESLint: 0 errors, 0 warnings ✓
+- Home: HTTP 200 ✓, Admin: HTTP 200 ✓
+- GitHub: Pushed (commit b02385a)
+
+## Completed
+1. **Admin full-screen layout** — admin page uses `h-screen overflow-hidden`, dashboard fills remaining space after top bar. No public header/footer leaking.
+2. **Image upload API** (`/api/admin/upload`) — accepts multipart/form-data, stores to `public/uploads/`, validates MIME type (png/jpeg/webp/gif/svg) and size (10MB max), returns URL.
+3. **ImageUploadField component** — dual-mode: upload button (file picker) + URL input. Shows preview with remove button. Used for all image fields.
+4. **Resource configs updated** — all `imageUrl`/`coverImage`/`avatarUrl`/`logoUrl`/`beforeImage`/`afterImage` fields changed from `type: "url"` to `type: "image"`.
+5. **SettingsManager fixed** — removed `setForm`/`setLoaded` calls inside queryFn (React anti-pattern), uses `useEffect` to sync fetched data to form state.
+
+## Admin Flow (Improved)
+1. Navigate to `/admin` → login form (email + password)
+2. After login → full-screen dashboard with top bar + sidebar + content area
+3. Top bar: "View Site" link + "Sign Out" button
+4. Sidebar: 17 tabs (overview, leads, applications, newsletter, 11 content types, settings, activity)
+5. Content tabs use ResourceManager with image upload support
+6. Settings tab uses SettingsManager (fixed data sync)
+
+## Admin Features
+- Image upload with preview for all image fields
+- URL input as fallback (paste external URL)
+- Settings form with sections (General, Contact, Location, Social, Files)
+- Stats panel with date-range filter
+- Bulk actions for leads/applications
+- Admin global search (⌘K)
