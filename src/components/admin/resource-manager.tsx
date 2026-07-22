@@ -501,6 +501,17 @@ function SettingsManager() {
         </Button>
       </div>
 
+      {save.isError && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+          <strong>Error:</strong> {save.error?.message ?? "Failed to save settings."}
+        </div>
+      )}
+      {save.isSuccess && (
+        <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-3 text-sm text-green-600">
+          Settings saved successfully.
+        </div>
+      )}
+
       {Object.entries(sections).map(([sectionName, fields]) => (
         <Card key={sectionName} className="p-5">
           <h2 className="font-semibold text-foreground mb-4 pb-2 border-b">{sectionName}</h2>
@@ -511,7 +522,7 @@ function SettingsManager() {
                 {f.type === "textarea" ? (
                   <Textarea
                     id={f.name}
-                    value={String(form[f.name] ?? "")}
+                    value={form[f.name] == null ? "" : String(form[f.name])}
                     onChange={(e) => setForm((p) => ({ ...p, [f.name]: e.target.value }))}
                     rows={3}
                     className="mt-1.5"
@@ -519,7 +530,7 @@ function SettingsManager() {
                 ) : (
                   <Input
                     id={f.name}
-                    value={String(form[f.name] ?? "")}
+                    value={form[f.name] == null ? "" : String(form[f.name])}
                     onChange={(e) => setForm((p) => ({ ...p, [f.name]: e.target.value }))}
                     className="mt-1.5"
                   />
