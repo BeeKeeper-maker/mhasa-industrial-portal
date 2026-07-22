@@ -1751,3 +1751,47 @@ ResourceManager("settings"):
   6. useMutation(del) ✓
   7. resource === "settings" → return <SettingsManager /> ✓ (after all hooks)
 ```
+
+---
+Task ID: ADMIN-LOGIN-LOOP (Sign In Page Loop Fix)
+Agent: Principal Architect
+Task: Fix admin sign-in infinite redirect loop
+
+## Status
+- TypeScript: 0 errors ✓
+- ESLint: 0 errors, 0 warnings ✓
+- GitHub: Pushed (commit 50baa05)
+
+## Root Cause
+NextAuth config has `pages: { signIn: "/admin" }`. When an unauthenticated user visits any admin page:
+1. AdminPage shows "Please sign in" with a link to `/api/auth/signin`
+2. User clicks → goes to `/api/auth/signin`
+3. NextAuth sees `pages.signIn = "/admin"` → redirects back to `/admin`
+4. `/admin` shows "Please sign in" again → **infinite loop**
+
+## Fix
+1. **`/admin/page.tsx`** — now shows a full login form (email + password) directly when not authenticated
+   - Form calls `signIn("credentials", { redirect: false })` — no redirect
+   - Premium UI: Lock icon, motion animation, h-11 inputs, gold accent, "Back to website" link
+   - Shows `<AdminOverview />` when authenticated
+
+2. **`auth-guard.tsx`** — now shows inline login form when not authenticated
+   - Same form pattern (no redirect, no loop)
+   - All admin sub-routes show the inline form if session expires
+   - Shows children when authenticated
+
+## Login Flow (Fixed)
+```
+User visits /admin:
+  → useSession() → not authenticated
+  → Show inline login form (email + password)
+  → User fills form → signIn("credentials", {redirect: false})
+  → Success → session created → page re-renders → AdminOverview
+
+User visits /admin/services (not authenticated):
+  → AuthGuard → useSession() → not authenticated
+  → Show inline login form
+  → User fills form → signIn → success → ResourceManager renders
+```
+
+No redirect, no loop, no NextAuth default signin page needed.
