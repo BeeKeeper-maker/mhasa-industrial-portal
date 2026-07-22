@@ -1,9 +1,14 @@
 import { db } from "@/lib/db";
 import { makeGetOneHandler, makeUpdateHandler, makeDeleteHandler } from "@/lib/crud-factory";
 import { serviceSchema } from "@/lib/validations";
-import { stringifyArray } from "@/lib/api";
+import { stringifyArray, parseJsonArray } from "@/lib/api";
 
-export const GET = makeGetOneHandler({ model: db.service, schema: serviceSchema, entityName: "Service" });
+const transformResponse = (item: Record<string, unknown>) => ({
+  ...item,
+  features: parseJsonArray(item.features as unknown as string),
+});
+
+export const GET = makeGetOneHandler({ model: db.service, schema: serviceSchema, entityName: "Service", transformResponse });
 
 export const PUT = makeUpdateHandler({
   model: db.service,

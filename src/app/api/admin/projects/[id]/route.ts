@@ -1,11 +1,15 @@
 import { db } from "@/lib/db";
 import { makeGetOneHandler, makeUpdateHandler, makeDeleteHandler } from "@/lib/crud-factory";
 import { projectSchema } from "@/lib/validations";
-import { stringifyArray } from "@/lib/api";
+import { stringifyArray, parseJsonArray } from "@/lib/api";
 
 const include = { services: { include: { service: true } } };
+const transformResponse = (item: Record<string, unknown>) => ({
+  ...item,
+  galleryImages: parseJsonArray(item.galleryImages as unknown as string),
+});
 
-export const GET = makeGetOneHandler({ model: db.project, schema: projectSchema, entityName: "Project", include });
+export const GET = makeGetOneHandler({ model: db.project, schema: projectSchema, entityName: "Project", include, transformResponse });
 
 export const PUT = makeUpdateHandler({
   model: db.project,

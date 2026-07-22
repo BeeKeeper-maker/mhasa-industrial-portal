@@ -20,16 +20,19 @@ interface ListConfig<T> {
   model: PrismaListDelegate<T>;
   orderBy?: Record<string, "asc" | "desc">;
   include?: Record<string, unknown>;
+  /** Transform each item before returning (e.g. parse JSON string fields to arrays). */
+  transformResponse?: (item: T) => T;
 }
 
 /** Handler for GET (list all) — admin only. */
-export function makeListHandler<T>({ model, orderBy = { createdAt: "desc" }, include }: ListConfig<T>) {
+export function makeListHandler<T>({ model, orderBy = { createdAt: "desc" }, include, transformResponse }: ListConfig<T>) {
   return async function GET(_request: NextRequest): Promise<NextResponse> {
     const auth = await requireAdmin();
     if (isErrorResponse(auth)) return auth;
 
     const items = await model.findMany({ orderBy, ...(include ? { include } : {}) });
-    return ok(items);
+    const transformed = transformResponse ? items.map(transformResponse) : items;
+    return ok(transformed);
   };
 }
 
@@ -111,11 +114,12 @@ interface EntityConfig<TEntity> {
   schema: ZodSchema<unknown>;
   entityName: string;
   transform?: (input: unknown) => Record<string, unknown>;
+  transformResponse?: (item: TEntity) => TEntity;
   include?: Record<string, unknown>;
 }
 
 /** GET /api/admin/[resource]/[id] */
-export function makeGetOneHandler<TEntity>({ model, include }: EntityConfig<TEntity>) {
+export function makeGetOneHandler<TEntity>({ model, include, transformResponse }: EntityConfig<TEntity>) {
   return async function GET(
     _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -126,7 +130,7 @@ export function makeGetOneHandler<TEntity>({ model, include }: EntityConfig<TEnt
     const { id } = await params;
     const item = await model.findUnique({ where: { id }, ...(include ? { include } : {}) });
     if (!item) return fail("Not found", 404);
-    return ok(item);
+    return ok(transformResponse ? transformResponse(item) : item);
   };
 }
 

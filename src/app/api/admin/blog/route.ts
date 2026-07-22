@@ -1,12 +1,16 @@
 import { db } from "@/lib/db";
 import { makeListHandler, makeCreateHandler } from "@/lib/crud-factory";
 import { blogPostSchema } from "@/lib/validations";
-import { stringifyArray, slugify } from "@/lib/api";
+import { stringifyArray, parseJsonArray, slugify } from "@/lib/api";
 
 export const GET = makeListHandler({
   model: db.blogPost,
   orderBy: { createdAt: "desc" },
   include: { author: true },
+  transformResponse: (item: Record<string, unknown>) => ({
+    ...item,
+    tags: parseJsonArray(item.tags as unknown as string),
+  }),
 });
 
 export const POST = makeCreateHandler({

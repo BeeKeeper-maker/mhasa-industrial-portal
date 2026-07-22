@@ -1,11 +1,15 @@
 import { db } from "@/lib/db";
 import { makeGetOneHandler, makeUpdateHandler, makeDeleteHandler } from "@/lib/crud-factory";
 import { blogPostSchema } from "@/lib/validations";
-import { stringifyArray } from "@/lib/api";
+import { stringifyArray, parseJsonArray } from "@/lib/api";
 
 const include = { author: true };
+const transformResponse = (item: Record<string, unknown>) => ({
+  ...item,
+  tags: parseJsonArray(item.tags as unknown as string),
+});
 
-export const GET = makeGetOneHandler({ model: db.blogPost, schema: blogPostSchema, entityName: "BlogPost", include });
+export const GET = makeGetOneHandler({ model: db.blogPost, schema: blogPostSchema, entityName: "BlogPost", include, transformResponse });
 
 export const PUT = makeUpdateHandler({
   model: db.blogPost,
@@ -17,8 +21,6 @@ export const PUT = makeUpdateHandler({
     return {
       ...rest,
       tags: stringifyArray((input as { tags?: string[] }).tags ?? []),
-      // Only set publishedAt to now if switching to PUBLISHED and no existing date
-      // If already published, keep the existing date (don't pass publishedAt = let Prisma keep it)
       ...(publishedAt === null && (input as { status?: string }).status === "PUBLISHED"
         ? { publishedAt: new Date() }
         : {}),
