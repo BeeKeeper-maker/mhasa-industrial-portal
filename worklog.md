@@ -1720,3 +1720,34 @@ ResourceManager("services"):
   3. Array.isArray(items) → true → itemsArray = items
   4. itemsArray.filter() → works ✓
 ```
+
+---
+Task ID: SETTINGS-HOOKS-FIX (React Rules of Hooks Violation)
+Agent: Principal Architect
+Task: Fix settings page crash — React hooks called conditionally
+
+## Status
+- TypeScript: 0 errors ✓
+- ESLint: 0 errors, 0 warnings ✓
+- GitHub: Pushed (commit f22f8d8)
+
+## Root Cause
+The early-return for `settings`/`activity` was placed BEFORE `useState`, `useQuery`, and `useMutation` calls. This violates React's rules-of-hooks — hooks must be called in the exact same order on every render. When `resource === "settings"`, the component returned early, skipping all hooks. On the next render (if resource changed), hooks would be called in a different order, causing a crash.
+
+## Fix
+1. **All hooks called first, unconditionally** — `useState`, `useQuery`, `useMutation` all run before any early-return
+2. **Early-return moved AFTER hooks** — settings/activity check happens after all hooks have been called
+3. **useQuery queryFn safety** — `Array.isArray(json.data) ? json.data : []` as defense-in-depth
+4. **No duplicate early-return blocks** — cleaned up
+
+## Code Flow (Fixed)
+```
+ResourceManager("settings"):
+  1. useState(editing) ✓
+  2. useState(open) ✓
+  3. useState(search) ✓
+  4. useQuery(admin/settings) ✓ — fetches but result ignored
+  5. useMutation(save) ✓
+  6. useMutation(del) ✓
+  7. resource === "settings" → return <SettingsManager /> ✓ (after all hooks)
+```
