@@ -1,7 +1,7 @@
 // ============================================================================
 // Admin Page — login gate + dashboard.
 // If not authenticated → show login form.
-// If authenticated → show AdminDashboard.
+// If authenticated → show AdminDashboard (full-screen, own layout).
 // ============================================================================
 
 "use client";
@@ -35,9 +35,9 @@ export default function AdminPage() {
   // Authenticated → show dashboard
   if (session) {
     return (
-      <div className="flex min-h-screen flex-col">
+      <div className="flex h-screen flex-col overflow-hidden">
         {/* Top bar */}
-        <div className="flex items-center justify-between border-b border-border bg-navy px-4 py-3 text-white">
+        <header className="flex items-center justify-between border-b border-border bg-navy px-4 py-3 text-white flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold/20 text-gold">
               <Shield className="h-5 w-5" />
@@ -50,16 +50,16 @@ export default function AdminPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-white hover:bg-white/10 hover:text-white"
-            >
-              <Link href="/" className="inline-flex items-center gap-2">
+            <Link href="/">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/10 hover:text-white"
+              >
                 <ArrowLeft className="h-4 w-4" />
                 <span className="hidden sm:inline">View Site</span>
-              </Link>
-            </Button>
+              </Button>
+            </Link>
             <Button
               variant="ghost"
               size="sm"
@@ -70,9 +70,9 @@ export default function AdminPage() {
               <span className="hidden sm:inline">Sign Out</span>
             </Button>
           </div>
-        </div>
+        </header>
 
-        {/* Dashboard */}
+        {/* Dashboard — fills remaining space */}
         <div className="flex-1 overflow-hidden">
           <AdminDashboard />
         </div>
@@ -162,8 +162,9 @@ export default function AdminPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <Link href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              ← Back to website
+            <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to website
             </Link>
           </div>
         </div>

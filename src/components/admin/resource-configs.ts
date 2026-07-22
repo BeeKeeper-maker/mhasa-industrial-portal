@@ -6,7 +6,7 @@
 export interface FieldConfig {
   name: string;
   label: string;
-  type: "text" | "textarea" | "boolean" | "number" | "email" | "url" | "array";
+  type: "text" | "textarea" | "boolean" | "number" | "email" | "url" | "array" | "image";
   required?: boolean;
   fullWidth?: boolean;
   rows?: number;
@@ -39,7 +39,7 @@ export const resourceConfigs: Partial<Record<ResourceKey, ResourceConfig>> = {
       { name: "titleAr", label: "Title (Arabic)", type: "text", fullWidth: true },
       { name: "slug", label: "Slug", type: "text", required: true, fullWidth: true },
       { name: "icon", label: "Icon (Lucide name)", type: "text", placeholder: "Building2" },
-      { name: "imageUrl", label: "Image URL", type: "url" },
+      { name: "imageUrl", label: "Image", type: "image" },
       { name: "excerpt", label: "Excerpt", type: "textarea", rows: 2, fullWidth: true },
       { name: "excerptAr", label: "Excerpt (Arabic)", type: "textarea", rows: 2, fullWidth: true },
       { name: "description", label: "Description", type: "textarea", rows: 6, required: true, fullWidth: true },
@@ -65,9 +65,9 @@ export const resourceConfigs: Partial<Record<ResourceKey, ResourceConfig>> = {
       { name: "value", label: "Project Value", type: "number" },
       { name: "currency", label: "Currency", type: "text", defaultValue: "SAR" },
       { name: "completionDate", label: "Completion Date", type: "text", placeholder: "YYYY-MM-DD" },
-      { name: "imageUrl", label: "Main Image URL", type: "url", fullWidth: true },
-      { name: "beforeImage", label: "Before Image URL", type: "url" },
-      { name: "afterImage", label: "After Image URL", type: "url" },
+      { name: "imageUrl", label: "Main Image", type: "image", fullWidth: true },
+      { name: "beforeImage", label: "Before Image", type: "image" },
+      { name: "afterImage", label: "After Image", type: "image" },
       { name: "description", label: "Description", type: "textarea", rows: 5, required: true, fullWidth: true },
       { name: "descriptionAr", label: "Description (Arabic)", type: "textarea", rows: 5, fullWidth: true },
       { name: "isFeatured", label: "Featured", type: "boolean", defaultValue: false },
@@ -84,7 +84,7 @@ export const resourceConfigs: Partial<Record<ResourceKey, ResourceConfig>> = {
       { name: "titleAr", label: "Title (Arabic)", type: "text", fullWidth: true },
       { name: "slug", label: "Slug", type: "text", required: true, fullWidth: true },
       { name: "category", label: "Category", type: "text", defaultValue: "Company Updates" },
-      { name: "coverImage", label: "Cover Image URL", type: "url", fullWidth: true },
+      { name: "coverImage", label: "Cover Image", type: "image", fullWidth: true },
       { name: "excerpt", label: "Excerpt", type: "textarea", rows: 2, fullWidth: true },
       { name: "content", label: "Content (Markdown)", type: "textarea", rows: 12, required: true, fullWidth: true },
       { name: "tags", label: "Tags", type: "array", fullWidth: true, placeholder: "Add a tag…" },
@@ -101,7 +101,7 @@ export const resourceConfigs: Partial<Record<ResourceKey, ResourceConfig>> = {
       { name: "nameAr", label: "Name (Arabic)", type: "text", fullWidth: true },
       { name: "designation", label: "Designation", type: "text", required: true },
       { name: "designationAr", label: "Designation (Arabic)", type: "text" },
-      { name: "imageUrl", label: "Photo URL", type: "url", fullWidth: true },
+      { name: "imageUrl", label: "Photo", type: "image", fullWidth: true },
       { name: "bio", label: "Bio", type: "textarea", rows: 4, fullWidth: true },
       { name: "bioAr", label: "Bio (Arabic)", type: "textarea", rows: 4, fullWidth: true },
       { name: "linkedinUrl", label: "LinkedIn URL", type: "url" },
@@ -120,7 +120,7 @@ export const resourceConfigs: Partial<Record<ResourceKey, ResourceConfig>> = {
       { name: "title", label: "Title", type: "text", required: true },
       { name: "titleAr", label: "Title (Arabic)", type: "text" },
       { name: "category", label: "Category", type: "text", defaultValue: "Projects" },
-      { name: "imageUrl", label: "Image URL", type: "url", required: true, fullWidth: true },
+      { name: "imageUrl", label: "Image", type: "image", required: true, fullWidth: true },
       { name: "description", label: "Description", type: "textarea", rows: 2, fullWidth: true },
       { name: "sortOrder", label: "Sort Order", type: "number", defaultValue: 0 },
       { name: "isActive", label: "Active", type: "boolean", defaultValue: true },
@@ -139,7 +139,7 @@ export const resourceConfigs: Partial<Record<ResourceKey, ResourceConfig>> = {
       { name: "content", label: "Testimonial", type: "textarea", rows: 4, required: true, fullWidth: true },
       { name: "contentAr", label: "Testimonial (Arabic)", type: "textarea", rows: 4, fullWidth: true },
       { name: "rating", label: "Rating (1-5)", type: "number", defaultValue: 5 },
-      { name: "avatarUrl", label: "Avatar URL", type: "url" },
+      { name: "avatarUrl", label: "Avatar", type: "image" },
       { name: "sortOrder", label: "Sort Order", type: "number", defaultValue: 0 },
       { name: "isActive", label: "Active", type: "boolean", defaultValue: true },
     ],
@@ -153,7 +153,7 @@ export const resourceConfigs: Partial<Record<ResourceKey, ResourceConfig>> = {
       { name: "name", label: "Name", type: "text", required: true },
       { name: "nameAr", label: "Name (Arabic)", type: "text" },
       { name: "industry", label: "Industry", type: "text" },
-      { name: "logoUrl", label: "Logo URL", type: "url" },
+      { name: "logoUrl", label: "Logo", type: "image" },
       { name: "websiteUrl", label: "Website URL", type: "url" },
       { name: "sortOrder", label: "Sort Order", type: "number", defaultValue: 0 },
       { name: "isActive", label: "Active", type: "boolean", defaultValue: true },
@@ -203,7 +203,7 @@ export const resourceConfigs: Partial<Record<ResourceKey, ResourceConfig>> = {
       { name: "titleAr", label: "Title (Arabic)", type: "text", fullWidth: true },
       { name: "subtitle", label: "Subtitle", type: "textarea", rows: 2, fullWidth: true },
       { name: "subtitleAr", label: "Subtitle (Arabic)", type: "textarea", rows: 2, fullWidth: true },
-      { name: "imageUrl", label: "Background Image URL", type: "url", required: true, fullWidth: true },
+      { name: "imageUrl", label: "Background Image", type: "image", required: true, fullWidth: true },
       { name: "ctaText", label: "CTA Button Text", type: "text" },
       { name: "ctaTextAr", label: "CTA Button Text (Arabic)", type: "text" },
       { name: "ctaLink", label: "CTA Link (view name)", type: "text", placeholder: "services / projects / contact" },

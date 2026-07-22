@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Edit, Loader2, X, Save, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -292,6 +292,12 @@ function ResourceForm({
                   onChange={(v) => update(field.name, v)}
                   placeholder={field.placeholder ?? "Add item…"}
                 />
+              ) : field.type === "image" ? (
+                <ImageUploadField
+                  value={String(form[field.name] ?? "")}
+                  onChange={(v) => update(field.name, v)}
+                  required={field.required}
+                />
               ) : (
                 <Input
                   id={field.name}
@@ -357,21 +363,22 @@ function ArrayInput({ value, onChange, placeholder }: { value: string[]; onChang
 // -------- Settings Manager (single record) --------
 function SettingsManager() {
   const [form, setForm] = useState<Record<string, unknown>>({});
-  const [loaded, setLoaded] = useState(false);
   const queryClient = useQueryClient();
 
-  const { isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["admin-settings"],
     queryFn: async () => {
       const res = await fetch("/api/admin/settings");
       const json = await res.json();
-      if (json.success) {
-        setForm(json.data ?? {});
-        setLoaded(true);
-      }
-      return json.data;
+      return json.success ? json.data : {};
     },
   });
+
+  // Sync fetched data to form state
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (data) setForm(data);
+  }, [data]);
 
   const save = useMutation({
     mutationFn: async (data: Record<string, unknown>) => {
@@ -412,7 +419,7 @@ function SettingsManager() {
     { name: "companyProfileUrl", label: "Company Profile PDF URL", section: "Files" },
   ];
 
-  if (isLoading && !loaded) {
+  if (isLoading) {
     return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   }
 
@@ -503,6 +510,83 @@ function ActivityLogViewer() {
           </div>
         </Card>
       )}
+    </div>
+  );
+}
+
+// -------- Image Upload Field --------
+function ImageUploadField({
+  value,
+  onChange,
+  required,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState(value);
+
+  const handleFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error);
+      const url = json.data.url as string;
+      onChange(url);
+      setPreview(url);
+      toast.success("Image uploaded successfully");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      {/* Preview */}
+      {preview && (
+        <div className="relative h-32 w-full overflow-hidden rounded-lg border border-border bg-muted">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={preview} alt="Preview" className="h-full w-full object-cover" />
+          <button
+            type="button"
+            onClick={() => { onChange(""); setPreview(""); }}
+            className="absolute top-1 end-1 rounded-full bg-black/60 p-1 text-white hover:bg-black/80"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      )}
+      {/* Upload + URL input */}
+      <div className="flex gap-2">
+        <Input
+          value={value}
+          onChange={(e) => { onChange(e.target.value); setPreview(e.target.value); }}
+          placeholder="https://... or upload below"
+          required={required && !value}
+          className="flex-1"
+        />
+        <label className="cursor-pointer">
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFile(file);
+            }}
+          />
+          <span className="inline-flex h-10 items-center justify-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+            {uploading ? "Uploading…" : "Upload"}
+          </span>
+        </label>
+      </div>
     </div>
   );
 }
