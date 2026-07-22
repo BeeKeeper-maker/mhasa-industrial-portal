@@ -95,13 +95,7 @@ export function ResourceManager({ resource, title }: ResourceManagerProps) {
     setOpen(true);
   };
 
-  const filtered = items.filter((item: Record<string, unknown>) => {
-    if (!search) return true;
-    const str = JSON.stringify(item).toLowerCase();
-    return str.includes(search.toLowerCase());
-  });
-
-  // Special handling for settings (single record)
+  // Special handling for settings (single record) — return BEFORE items.filter
   if (resource === "settings") {
     return <SettingsManager />;
   }
@@ -118,12 +112,21 @@ export function ResourceManager({ resource, title }: ResourceManagerProps) {
     );
   }
 
+  // Ensure items is always an array (API might return object for some resources)
+  const itemsArray = Array.isArray(items) ? items : [];
+
+  const filtered = itemsArray.filter((item: Record<string, unknown>) => {
+    if (!search) return true;
+    const str = JSON.stringify(item).toLowerCase();
+    return str.includes(search.toLowerCase());
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{items.length} records</p>
+          <p className="text-sm text-muted-foreground mt-1">{itemsArray.length} records</p>
         </div>
         <div className="flex gap-2">
           <div className="relative">
