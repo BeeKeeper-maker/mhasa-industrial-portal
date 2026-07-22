@@ -42,7 +42,7 @@ export function ResourceManager({ resource, title }: ResourceManagerProps) {
     queryFn: async () => {
       const res = await fetch(`/api/admin/${resource}`);
       const json = await res.json();
-      return json.success ? json.data : [];
+      return Array.isArray(json.data) ? json.data : [];
     },
   });
 
@@ -95,7 +95,7 @@ export function ResourceManager({ resource, title }: ResourceManagerProps) {
     setOpen(true);
   };
 
-  // Special handling for settings (single record) — return BEFORE items.filter
+  // Early return for settings/activity (after all hooks have been called)
   if (resource === "settings") {
     return <SettingsManager />;
   }
@@ -112,7 +112,7 @@ export function ResourceManager({ resource, title }: ResourceManagerProps) {
     );
   }
 
-  // Ensure items is always an array (API might return object for some resources)
+  // Ensure items is always an array
   const itemsArray = Array.isArray(items) ? items : [];
 
   const filtered = itemsArray.filter((item: Record<string, unknown>) => {
