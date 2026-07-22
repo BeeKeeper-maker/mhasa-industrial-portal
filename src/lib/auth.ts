@@ -46,7 +46,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   session: { strategy: "jwt", maxAge: 60 * 60 * 8 }, // 8 hours
-  pages: { signIn: "/?admin=login" },
+  pages: { signIn: "/admin" },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

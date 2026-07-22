@@ -23,12 +23,10 @@ export type ViewKey =
 
 interface AppState {
   locale: Locale;
-  adminOpen: boolean;
   searchOpen: boolean;
   quoteOpen: boolean;
   setLocale: (locale: Locale) => void;
   toggleLocale: () => void;
-  setAdminOpen: (open: boolean) => void;
   setSearchOpen: (open: boolean) => void;
   setQuoteOpen: (open: boolean) => void;
 }
@@ -37,13 +35,11 @@ export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
       locale: "en",
-      adminOpen: false,
       searchOpen: false,
       quoteOpen: false,
       setLocale: (locale) => set({ locale }),
       toggleLocale: () =>
         set((s) => ({ locale: s.locale === "en" ? "ar" : "en" })),
-      setAdminOpen: (adminOpen) => set({ adminOpen }),
       setSearchOpen: (searchOpen) => set({ searchOpen }),
       setQuoteOpen: (quoteOpen) => set({ quoteOpen }),
     }),

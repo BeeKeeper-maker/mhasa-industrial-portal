@@ -6,14 +6,13 @@
 "use client";
 
 import { Phone, Mail, MapPin, Linkedin, Facebook, Instagram, Youtube, Download, Shield } from "lucide-react";
-import { useAppStore, navigateToView, navigateToService, type ViewKey } from "@/lib/store";
+import { navigateToView, navigateToService, type ViewKey } from "@/lib/store";
 import { useLocale } from "@/lib/hooks/use-locale";
 import { useSiteData } from "@/lib/hooks/use-queries";
 import { useServices } from "@/lib/hooks/use-queries";
 import { NewsletterWidget } from "@/components/site/newsletter-widget";
 
 export function Footer() {
-  const setAdminOpen = useAppStore((s) => s.setAdminOpen);
   const { t, locale, pick } = useLocale();
   const { data: siteData } = useSiteData();
   const { data: services } = useServices();
@@ -215,14 +214,14 @@ export function Footer() {
             <button onClick={() => navigateToView("terms")} className="hover:text-gold transition-colors">
               {t.common.terms}
             </button>
-            <button
-              onClick={() => setAdminOpen(true)}
+            <a
+              href="/admin"
               className="inline-flex items-center gap-1 hover:text-gold transition-colors"
               title="Admin access"
             >
               <Shield className="h-3 w-3" />
               Admin
-            </button>
+            </a>
           </div>
         </div>
       </div>

@@ -21,7 +21,6 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const setAdminOpen = useAppStore((s) => s.setAdminOpen);
   const setSearchOpen = useAppStore((s) => s.setSearchOpen);
   const { t, locale, toggleLocale } = useLocale();
   const { data: siteData } = useSiteData();
@@ -225,15 +224,16 @@ export function Header() {
                           <Globe className="h-4 w-4" />
                           {locale === "en" ? "العربية" : "English"}
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => { setAdminOpen(true); setMobileOpen(false); }}
-                          className="flex-1"
-                        >
-                          <Shield className="h-4 w-4" />
-                          Admin
-                        </Button>
+                        <a href="/admin" className="flex-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                          >
+                            <Shield className="h-4 w-4" />
+                            Admin
+                          </Button>
+                        </a>
                       </div>
                       <div className="flex justify-center pt-1">
                         <ThemeToggle />

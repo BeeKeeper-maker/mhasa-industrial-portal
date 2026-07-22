@@ -9,7 +9,6 @@ import { Footer } from "@/components/site/footer";
 import { BackToTop, FloatingActions, CookieConsent } from "@/components/site/floating-ui";
 import { SearchDialog } from "@/components/site/search-dialog";
 import { QuickQuoteWidget } from "@/components/site/quick-quote-widget";
-import { AdminOverlay } from "@/components/admin/admin-overlay";
 import { RtlRoot } from "@/components/site/rtl-root";
 
 const inter = Inter({
@@ -151,7 +150,6 @@ export default async function RootLayout({
               <CookieConsent />
               <SearchDialog />
               <QuickQuoteWidget />
-              <AdminOverlay />
             </div>
           </RtlRoot>
         </Providers>
