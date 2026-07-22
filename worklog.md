@@ -1537,3 +1537,36 @@ Rewrote `src/lib/validations.ts`:
 ├── activity/           → List (activity log)
 └── upload/             → Image upload (POST → /uploads/)
 ```
+
+---
+Task ID: ADMIN-BUG-FIX (ArrayInput + CRUD Transforms + Duplicate Cleanup)
+Agent: Principal Architect
+Task: Fix ArrayInput bug, all CRUD data flow issues, delete duplicate files
+
+## Status
+- TypeScript: 0 errors ✓
+- ESLint: 0 errors, 0 warnings ✓
+- Routes: / (200), /admin (200), /admin/services (200) ✓
+- GitHub: Pushed (commit 84dd4d0)
+
+## Critical Fix — ArrayInput Data Mismatch
+**Root cause**: Admin API list endpoints returned raw Prisma data where array fields (features, tags, requirements, galleryImages) were stored as JSON strings in SQLite. The edit form's ArrayInput expected JavaScript arrays, but received JSON strings — causing the reported bug.
+
+**Fix**:
+1. Added `transformResponse` to `ListConfig` and `EntityConfig` in `crud-factory.ts`
+2. All admin list routes (services, projects, blog, careers) now use `parseJsonArray()` to convert JSON strings back to arrays before returning
+3. All admin [id] GET routes also parse JSON arrays for the edit dialog
+4. The `transformResponse` callback runs on every item before returning to the client
+
+## Other Fixes
+1. **Deleted duplicate middleware.ts** — conflicted with proxy.ts (Next.js 16 error)
+2. **Deleted duplicate root files** — page.tsx, error.tsx, loading.tsx, not-found.tsx existed both in root and (public) route group, causing "parallel pages resolve to same path" error
+3. **Deleted empty leftover directories** — src/app/about, services, projects etc. were empty shells from git merge
+4. **Recreated upload API** — was accidentally deleted by git
+5. **Deleted old manifest.json** — replaced by manifest.ts
+
+## Data Flow (Fixed)
+```
+Database (JSON string) → API transformResponse (parseJsonArray) → Array → Form ArrayInput ✓
+Form ArrayInput (array) → API transform (stringifyArray) → JSON string → Database ✓
+```
