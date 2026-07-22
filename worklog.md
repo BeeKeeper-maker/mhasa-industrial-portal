@@ -1378,3 +1378,88 @@ Task: Fix admin dashboard layout, add image upload, fix settings/errors
 - Stats panel with date-range filter
 - Bulk actions for leads/applications
 - Admin global search (⌘K)
+
+---
+Task ID: ADMIN-ARCHITECTURE (Route Groups + Sub-Routes + Auth Guard)
+Agent: Principal Architect
+Task: Fix admin architecture — header leak, URL routing, auth guard
+
+## Status
+- TypeScript: 0 errors ✓
+- ESLint: 0 errors, 0 warnings ✓
+- Routes: / (200), /admin (200), /admin/services (200) ✓
+- GitHub: Pushed (commit 47a2e6b)
+
+## Major Fixes
+
+### 1. Route Groups — Header/Footer Leak Fixed (CRITICAL)
+**Problem**: Root layout had Header/Footer — they appeared on ALL routes including /admin.
+**Fix**: 
+- Moved all public pages to `src/app/(public)/` route group
+- Created `src/app/(public)/layout.tsx` with Header/Footer/overlays
+- Root `src/app/layout.tsx` now only has `<html>/<body>/<Providers>` — NO Header/Footer
+- Admin pages get clean layout without any public UI
+
+### 2. Admin Sub-Routes — URL Per Section (CRITICAL)
+**Problem**: All admin sections were on single `/admin` page with tab state — URL never changed.
+**Fix**:
+- Created 17 admin sub-route pages: `/admin/services`, `/admin/projects`, `/admin/blog`, etc.
+- Each section has its own URL — browser back/forward works, deep linking works
+- Sidebar uses `<Link>` for navigation (not tab state)
+- Active state derived from `usePathname()`
+
+### 3. AdminAuthGuard — Session Check (HIGH)
+**Problem**: Admin sub-routes didn't check authentication.
+**Fix**:
+- Created `src/components/admin/auth-guard.tsx`
+- Every admin sub-route wrapped with `<AdminAuthGuard>`
+- Shows loading spinner while session loads
+- Shows "Sign In" prompt if not authenticated
+- Shows content if authenticated
+
+### 4. AdminDashboard Redesign (MEDIUM)
+- Redesigned as shell component (sidebar + topbar + content area)
+- Sidebar with `<Link>` navigation — 17 tabs
+- Mobile-responsive: hamburger menu with slide-in sidebar
+- Top bar: Shield icon, "View Site" link, "Sign Out" button
+- Content area: `{children}` from each sub-route page
+
+### 5. Admin Layout (MEDIUM)
+- `src/app/admin/layout.tsx` wraps AdminDashboard shell
+- SessionProvider via AdminSessionProvider
+- Toaster for notifications
+- `robots: noindex, nofollow` — not indexed by search engines
+
+## Architecture (Final)
+```
+src/app/
+├── layout.tsx          — Root (html/body/Providers only — NO Header/Footer)
+├── global-error.tsx    — Global error boundary
+├── (public)/
+│   ├── layout.tsx      — Header/Footer/overlays for public pages
+│   ├── page.tsx        — Home
+│   ├── about/page.tsx  — About
+│   ├── services/       — Services list + [slug]
+│   ├── projects/       — Projects list + [slug]
+│   ├── ... (12 routes total)
+│   ├── error.tsx       — Public error boundary
+│   ├── loading.tsx     — Public loading
+│   └── not-found.tsx   — Public 404
+├── admin/
+│   ├── layout.tsx      — AdminDashboard shell (sidebar + topbar)
+│   ├── page.tsx        — Overview (auth check)
+│   ├── services/page.tsx   — Services CRUD (auth guarded)
+│   ├── projects/page.tsx   — Projects CRUD (auth guarded)
+│   ├── blog/page.tsx       — Blog CRUD (auth guarded)
+│   ├── ... (17 routes total)
+│   └── settings/page.tsx   — Site Settings (auth guarded)
+```
+
+## Admin Flow (Final)
+1. Navigate to `/admin` → checks session
+2. Not authenticated → login form
+3. Authenticated → Overview dashboard with charts/stats
+4. Click sidebar item → navigates to `/admin/services` (URL changes!)
+5. Each section has AdminAuthGuard — redirects to login if session expires
+6. "View Site" link → back to public site
+7. "Sign Out" → clears session, returns to login
