@@ -50,8 +50,8 @@ function HeroSection() {
   const { t, pick } = useLocale();
   const heroes = siteData?.heroes ?? [];
   const [index, setIndex] = useState(0);
-  const { y: heroLayer1Y } = useParallax(60);
-  const { y: heroLayer2Y } = useParallax(40);
+  const { ref: heroLayer1Ref, y: heroLayer1Y } = useParallax(60);
+  const { ref: heroLayer2Ref, y: heroLayer2Y } = useParallax(40);
 
   useEffect(() => {
     if (heroes.length <= 1) return;
@@ -98,6 +98,7 @@ function HeroSection() {
 
       {/* Decorative parallax depth layers */}
       <motion.div
+        ref={heroLayer1Ref}
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.15 }}
         transition={{ delay: 0.5, duration: 1 }}
@@ -105,6 +106,7 @@ function HeroSection() {
         style={{ y: heroLayer1Y }}
       />
       <motion.div
+        ref={heroLayer2Ref}
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.1 }}
         transition={{ delay: 0.7, duration: 1 }}
