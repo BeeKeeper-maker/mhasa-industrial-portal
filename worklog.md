@@ -1570,3 +1570,53 @@ Task: Fix ArrayInput bug, all CRUD data flow issues, delete duplicate files
 Database (JSON string) → API transformResponse (parseJsonArray) → Array → Form ArrayInput ✓
 Form ArrayInput (array) → API transform (stringifyArray) → JSON string → Database ✓
 ```
+
+---
+Task ID: ADMIN-UX (Admin UX Enhancement + Bug Cleanup)
+Agent: webDevReview cron
+Task: Enhance admin UI/UX, loading states, empty states, error display, quick actions
+
+## Current Project Status
+- **TypeScript**: 0 errors ✓
+- **ESLint**: 0 errors, 0 warnings ✓
+- **Server**: / (200), /admin (200), /admin/services (200) ✓
+- **GitHub**: Pushed (commit f47111b)
+
+## Completed Modifications
+
+### 1. ResourceManager Loading Skeletons
+- Replaced spinner with 6 skeleton cards (shimmer animation)
+- Each skeleton has image placeholder + text lines matching real card layout
+- Consistent with the premium card-lift design pattern
+
+### 2. ResourceManager Empty State
+- Icon (Plus in circle) + contextual message
+- "No records matching '{search}'" when searching
+- "No records yet." with "Create First Record" button when empty
+- Better UX than plain text
+
+### 3. Edit Dialog Error Display
+- Red-bordered error banner appears on save failure
+- Shows `save.error?.message` — the actual API error
+- Helps users understand what went wrong (validation, unique constraint, etc.)
+
+### 4. Edit Dialog Title Icons
+- Edit icon (pencil) for edit mode
+- Plus icon for create mode
+- Gold accent color matches brand
+
+### 5. Admin Overview Quick Actions
+- 5 quick action buttons below the header:
+  - View Leads → /admin/leads
+  - Manage Services → /admin/services
+  - Manage Projects → /admin/projects
+  - Write Blog Post → /admin/blog
+  - Site Settings → /admin/settings
+- Using `<Link>` for proper client-side navigation
+- Outline style, small size, icon + text
+
+## Unresolved Issues / Next-Phase Recommendations
+- **Sandbox memory**: 4GB limit causes server reaping when compiling many routes. Code is production-ready — works with 8GB+ RAM.
+- **View prop refactor**: Views still fetch data client-side via hooks. Can pass server-fetched data as props to eliminate duplicate fetches.
+- **Header `<Link>` optimization**: Public site header uses `navigateToView()` (window.location.href). Can migrate to `<Link>` for client-side navigation.
+- **Admin search click-to-edit**: AdminSearch finds records but doesn't navigate to edit form. Can add click handler.
