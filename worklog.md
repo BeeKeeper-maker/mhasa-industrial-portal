@@ -1463,3 +1463,77 @@ src/app/
 5. Each section has AdminAuthGuard — redirects to login if session expires
 6. "View Site" link → back to public site
 7. "Sign Out" → clears session, returns to login
+
+---
+Task ID: ADMIN-CRUD-FIX (Validation Schemas + CRUD Transforms + Collapsible Sidebar)
+Agent: Principal Architect
+Task: Fix all admin CRUD errors, add collapsible sidebar, robust validation
+
+## Status
+- TypeScript: 0 errors ✓
+- ESLint: 0 errors, 0 warnings ✓
+- All admin routes: 200 ✓
+- GitHub: Pushed (commit 075dec1)
+
+## Completed Fixes
+
+### 1. Validation Schemas (CRITICAL — Fixed ALL edit errors)
+Rewrote `src/lib/validations.ts`:
+- **Image fields**: `z.string().url()` → accepts relative paths (`/uploads/xxx.png`), data URLs, and absolute URLs
+- **Number fields**: `z.number()` → `z.coerce.number()` (accepts string from HTML number inputs)
+- **Boolean fields**: `z.boolean()` → `z.coerce.boolean()` (handles true/false/"true"/"false")
+- All 14 schemas updated (service, project, blog, team, testimonial, gallery, client, job, faq, hero, stat, etc.)
+
+### 2. ResourceManager Form Data Cleaning
+- Empty strings → `null` before sending to API
+- `"undefined"` strings → `null`
+- Removes `id` field from request body (prevents "unknown field" errors)
+
+### 3. Select Field Type
+- Added `"select"` type to FieldConfig with `options` array
+- Blog status: DRAFT/PUBLISHED dropdown (was free text input)
+- Careers status: OPEN/CLOSED dropdown (was free text input)
+- ResourceManager renders `<Select>` component for select fields
+
+### 4. Blog publishedAt Fix
+- **Problem**: Every blog update set `publishedAt = new Date()`, overwriting original publish date
+- **Fix**: Only set `publishedAt` when status changes to PUBLISHED AND no existing date
+- Create route: sets `publishedAt = new Date()` if status is PUBLISHED
+- Update route: preserves existing `publishedAt`, only sets new date if upgrading to PUBLISHED
+
+### 5. Stats Route Conflict Fix
+- **Problem**: `/api/admin/stats` returned analytics data (charts), but ResourceManager expected CRUD list
+- **Fix**: Split into two routes:
+  - `/api/admin/stats` → CRUD list + create (for ResourceManager)
+  - `/api/admin/stats/analytics` → Analytics data (for charts/overview)
+- Updated admin charts and overview panel to fetch from `/api/admin/stats/analytics`
+
+### 6. Collapsible Sidebar Groups
+- 4 groups: Dashboard, Inbox, Content, System
+- Click group header to collapse/expand
+- Active group auto-expands (even if collapsed)
+- Chevron icons (right = collapsed, down = expanded)
+- Mobile drawer with hamburger menu
+
+## Admin Architecture (Final)
+```
+/api/admin/
+├── services/           → CRUD (list, create, [id] get/update/delete)
+├── projects/           → CRUD (with serviceIds, galleryImages, dates)
+├── blog/               → CRUD (with tags, publishedAt logic)
+├── team/               → CRUD (simple, no transform)
+├── gallery/            → CRUD (simple)
+├── testimonials/       → CRUD (simple)
+├── clients/            → CRUD (simple)
+├── careers/            → CRUD (with requirements, closingDate)
+├── faqs/               → CRUD (simple)
+├── heroes/             → CRUD (simple)
+├── stats/              → CRUD (list + create)
+├── stats/analytics/    → Analytics (charts data, date-range filter)
+├── settings/           → Single record (GET + PUT)
+├── leads/              → List + [id] (PATCH status, DELETE)
+├── applications/       → List + [id] (PATCH status, DELETE)
+├── newsletter/         → List (subscribers)
+├── activity/           → List (activity log)
+└── upload/             → Image upload (POST → /uploads/)
+```
