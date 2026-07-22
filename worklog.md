@@ -1795,3 +1795,46 @@ User visits /admin/services (not authenticated):
 ```
 
 No redirect, no loop, no NextAuth default signin page needed.
+
+---
+Task ID: ADMIN-LOGIN-FINAL (No Sidebar on Login + Auto-Reload)
+Agent: Principal Architect
+Task: Fix admin login — sidebar showing on login page + manual reload needed
+
+## Status
+- TypeScript: 0 errors ✓
+- ESLint: 0 errors, 0 warnings ✓
+- GitHub: Pushed (commit 7d43cf8)
+
+## Problems Fixed
+
+### 1. Sidebar/Topbar showing on login page
+**Problem**: AdminLayout always rendered `<AdminDashboard>` shell (sidebar + topbar), even when user was not authenticated. Login form appeared inside the sidebar layout — looked broken.
+
+**Fix**: AdminLayout now has an inner component that checks `useSession()`:
+- Not authenticated → login form ONLY (centered, no sidebar, no topbar, no menu)
+- Authenticated → full AdminDashboard shell (sidebar + topbar + content)
+- Loading → spinner only
+
+### 2. Manual reload needed after login
+**Problem**: After `signIn("credentials", {redirect: false})`, the session was created but the page didn't update — user had to manually reload.
+
+**Fix**: After successful login → `setTimeout(() => window.location.reload(), 500)` — gives time for toast, then reloads the page with the new session cookie.
+
+### 3. Simplified page/guard components
+- `/admin/page.tsx` — just renders `<AdminOverview />` (login handled by layout)
+- `auth-guard.tsx` — just shows spinner during loading (login handled by layout)
+
+## Architecture (Final)
+```
+/admin/layout.tsx (Client Component):
+  ├── AdminSessionProvider (wraps everything)
+  ├── AdminLayoutInner:
+  │   ├── status === "loading" → spinner
+  │   ├── !session → login form (centered, premium UI, no sidebar)
+  │   └── session → AdminDashboard shell (sidebar + topbar + {children})
+  └── Toaster
+
+/admin/page.tsx → <AdminOverview /> (only renders when authenticated)
+/admin/services/page.tsx → <AdminAuthGuard><ResourceManager /></AdminAuthGuard>
+```
